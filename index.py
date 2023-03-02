@@ -2,15 +2,18 @@ from flask import Flask, request, abort
 from linebot import LineBotApi, WebhookHandler
 from linebot.exceptions import InvalidSignatureError
 from linebot.models import MessageEvent, TextMessage, TextSendMessage
-from chatgpt import ChatGPT
 from flask_ngrok import run_with_ngrok
 from argument import Argument
 import os
+import time
+
+from chatgpt import ChatGPT
+from database import database
 
 line_bot_api = LineBotApi(Argument.linebot_apt)
 line_handler = WebhookHandler(Argument.webhook_secret)
-working_status = True
 
+db = database()
 app = Flask(__name__)
 chatgpt = ChatGPT()
 
@@ -36,33 +39,23 @@ def callback():
 
 @line_handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
-    global working_status
-    
     if event.message.type != "text":
         return
     
-    if event.message.text == "啟動":
-        working_status = True
-        line_bot_api.reply_message(
-            event.reply_token,
-            TextSendMessage(text="我是時下流行的AI智能，目前可以為您服務囉，歡迎來跟我互動~"))
-        return
+    user_id = event.source.user_id
+    # print(event)
 
-    if event.message.text == "安靜":
-        working_status = False
-        line_bot_api.reply_message(
-            event.reply_token,
-            TextSendMessage(text="感謝您的使用，若需要我的服務，請跟我說 「啟動」 謝謝~"))
-        return
+    chatgpt.add_msg(user_id, f"Human:{event.message.text}?\n")
+    db.save_chat(user_id, event.timestamp, 1, event.message.text)
+
+    reply_msg = chatgpt.get_response(user_id).replace("AI:", "", 1)
+    chatgpt.add_msg(user_id, f"AI:{reply_msg}\n")
+    db.save_chat(user_id, int(time.time()*1000), 0, reply_msg)
+
+    line_bot_api.reply_message(
+        event.reply_token,
+        TextSendMessage(text=reply_msg))
     
-    if working_status:
-        chatgpt.add_msg(f"Human:{event.message.text}?\n")
-        reply_msg = chatgpt.get_response().replace("AI:", "", 1)
-        chatgpt.add_msg(f"AI:{reply_msg}\n")
-        line_bot_api.reply_message(
-            event.reply_token,
-            TextSendMessage(text=reply_msg))
-
 
 if __name__ == "__main__":
     # run_with_ngrok(app)

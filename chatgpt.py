@@ -15,10 +15,10 @@ class ChatGPT:
         self.presence_penalty = float(os.getenv("OPENAI_PRESENCE_PENALTY", default = 0.6))
         self.max_tokens = int(os.getenv("OPENAI_MAX_TOKENS", default = 240))
 
-    def get_response(self):
+    def get_response(self, userId):
         response = openai.Completion.create(
             model=self.model,
-            prompt=self.prompt.generate_prompt(),
+            prompt=self.prompt.generate_prompt(userId),
             temperature=self.temperature,
             frequency_penalty=self.frequency_penalty,
             presence_penalty=self.presence_penalty,
@@ -26,5 +26,5 @@ class ChatGPT:
         )
         return response['choices'][0]['text'].strip()
 
-    def add_msg(self, text):
-        self.prompt.add_msg(text)
+    def add_msg(self, userId, text):
+        self.prompt.add_msg(userId, text)

@@ -10,16 +10,23 @@ LANGUAGE_TABLE = {
 
 class Prompt:
     def __init__(self):
-        self.msg_list = []
-        self.msg_list.append(f"AI:{LANGUAGE_TABLE[chat_language]}")
+        self.msgs = {}
     
-    def add_msg(self, new_msg):
-        if len(self.msg_list) >= MSG_LIST_LIMIT:
+    def new_session(self,userId):
+        self.msgs[userId] = []
+        self.msgs[userId].append(f"AI:{LANGUAGE_TABLE[chat_language]}")
+
+    def add_msg(self, userId, new_msg):
+        if userId not in self.msgs: # first session
+            self.new_session(userId)
+
+        elif len(self.msgs) >= MSG_LIST_LIMIT: # not first
             self.remove_msg()
-        self.msg_list.append(new_msg)
 
-    def remove_msg(self):
-        self.msg_list.pop(0)
+        self.msgs[userId].append(new_msg)
 
-    def generate_prompt(self):
-        return '\n'.join(self.msg_list)
+    def remove_msg(self, userId):
+        self.msgs[userId].pop(0)
+
+    def generate_prompt(self, userId):
+        return '\n'.join(self.msgs[userId])
