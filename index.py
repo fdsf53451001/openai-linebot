@@ -45,11 +45,9 @@ def handle_message(event):
     user_id = event.source.user_id
     # print(event)
 
-    chatgpt.add_msg(user_id, f"Human:{event.message.text}?\n")
     db.save_chat(user_id, event.timestamp, 1, event.message.text)
 
     reply_msg = chatgpt.get_response(user_id).replace("AI:", "", 1)
-    chatgpt.add_msg(user_id, f"AI:{reply_msg}\n")
     db.save_chat(user_id, int(time.time()*1000), 0, reply_msg)
 
     line_bot_api.reply_message(
@@ -59,4 +57,4 @@ def handle_message(event):
 
 if __name__ == "__main__":
     # run_with_ngrok(app)
-    app.run()
+    app.run(port=8000)

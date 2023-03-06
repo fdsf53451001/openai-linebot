@@ -1,13 +1,14 @@
-from prompt import Prompt
 from argument import Argument
 import os
 import openai
 
+from database import database
+
 openai.api_key = Argument.openai_key
+db = database()
 
 class ChatGPT:
     def __init__(self):
-        self.prompt = Prompt()
         self.model = os.getenv("OPENAI_MODEL", default = "text-davinci-003")
         #self.model = os.getenv("OPENAI_MODEL", default = "chatbot")
         self.temperature = float(os.getenv("OPENAI_TEMPERATURE", default = 0))
@@ -16,15 +17,18 @@ class ChatGPT:
         self.max_tokens = int(os.getenv("OPENAI_MAX_TOKENS", default = 240))
 
     def get_response(self, userId):
-        response = openai.Completion.create(
-            model=self.model,
-            prompt=self.prompt.generate_prompt(userId),
-            temperature=self.temperature,
-            frequency_penalty=self.frequency_penalty,
-            presence_penalty=self.presence_penalty,
-            max_tokens=self.max_tokens
-        )
-        return response['choices'][0]['text'].strip()
+        message_list = []
+        data = db.load_chat(userId)
+        for row in data:
+            if row[0]==0:
+                role = 'assistant'
+            else:
+                role = 'user'
+            message_list.append({'role':role,'content':row[1]})
 
-    def add_msg(self, userId, text):
-        self.prompt.add_msg(userId, text)
+        response = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo",
+            messages=message_list
+            )
+
+        return response['choices'][0]['message']['content']
