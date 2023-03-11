@@ -1,2 +1,3 @@
 argument.py
-chat.db
+cert/*
+data/*
