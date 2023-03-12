@@ -15,26 +15,39 @@ class database:
             print('ERR sqlite save failed!', err)
         self.conn.commit()
     
-    def load_chat(self, userId, count=5):
-        sql = 'SELECT direction,text FROM (SELECT time,direction,text FROM Message WHERE userId="'+userId+'" ORDER BY time  DESC LIMIT '+str(count)+') AS A ORDER BY time'
+    def deal_sql_request(self, command):
         try:
-            self.c.execute(sql)
+            self.c.execute(command)
             result = self.c.fetchall()
         except sqlite3.Error as err:
-            print('ERR sqlite load failed!', err)
+            print('ERR request failed!', command, err)
+            result = None
+        self.conn.commit()
+        return result
+
+    def load_chat(self, userId, count=5):
+        result = self.deal_sql_request('SELECT direction,text FROM (SELECT time,direction,text FROM Message WHERE userId="'+userId+'" ORDER BY time  DESC LIMIT '+str(count)+') AS A ORDER BY time')
         return result
 
     def load_chat_limited(self, userId, count=5, time_offset=180):
         time_limit = int((time.time()-time_offset)*1000)
-        sql = 'SELECT direction,text FROM (SELECT time,direction,text FROM Message WHERE userId="'+userId+'" AND time>='+str(time_limit)+' ORDER BY time  DESC LIMIT '+str(count)+') AS A ORDER BY time'
-        try:
-            self.c.execute(sql)
-            result = self.c.fetchall()
-        except sqlite3.Error as err:
-            print('ERR sqlite load failed!', err)
+        result = self.deal_sql_request('SELECT direction,text FROM (SELECT time,direction,text FROM Message WHERE userId="'+userId+'" AND time>='+str(time_limit)+' ORDER BY time  DESC LIMIT '+str(count)+') AS A ORDER BY time')
         return result
+
+    def load_user_amount(self):
+        result = self.deal_sql_request('SELECT COUNT(DISTINCT userId) FROM Message')
+        return result[0][0]
+
+    def load_chat_amount(self):
+        result = self.deal_sql_request('SELECT COUNT(*) FROM Message')
+        return result[0][0]
+
+    def load_chat_amount_each_month(self):
+        result = self.deal_sql_request("SELECT strftime('%Y-%m-%d', time / 1000, 'unixepoch') as day, COUNT(*) FROM Message GROUP BY day")
+        return result
+        
 
 if __name__ == '__main__':
     db = database()
-    data = db.load_chat_limited("U6a538ecc80009f40ac41e09d21ae6155")
+    data = db.load_chat_amount_each_month()
     print(data)
