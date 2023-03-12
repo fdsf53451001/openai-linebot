@@ -31,5 +31,5 @@ class ChatGPT:
             messages=message_list
             )
 
-        print(response)
+        #print(response)
         return response['choices'][0]['message']['content']
