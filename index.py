@@ -1,4 +1,4 @@
-from flask import Flask, request, abort
+from flask import Flask, request, abort, render_template
 from linebot import LineBotApi, WebhookHandler
 from linebot.exceptions import InvalidSignatureError
 from linebot.models import MessageEvent, TextMessage, TextSendMessage
@@ -20,7 +20,7 @@ chatgpt = ChatGPT()
 # domain root
 @app.route('/')
 def home():
-    return 'Hello, World!'
+    return render_template('index.html',USER_AMOUNT=db.load_user_amount(),CHAT_AMOUNT=db.load_chat_amount())
 
 @app.route("/webhook", methods=['POST'])
 def callback():
@@ -57,5 +57,5 @@ def handle_message(event):
 
 if __name__ == "__main__":
     # run_with_ngrok(app)
-    # app.run(host='0.0.0.0',port=80)
-    app.run(host='0.0.0.0',port=8000,ssl_context=('cert\cert.pem', 'cert\privkey.pem'))
+    app.run(host='0.0.0.0',port=8000)
+    # app.run(host='0.0.0.0',port=8000,ssl_context=('cert\cert.pem', 'cert\privkey.pem'))

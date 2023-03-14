@@ -3,7 +3,7 @@ import time
 
 class database:
     def __init__(self):
-        self.conn = sqlite3.connect('data\chat.db', check_same_thread=False)
+        self.conn = sqlite3.connect('data/chat.db', check_same_thread=False)
         self.c = self.conn.cursor()
 
     def save_chat(self, userId, time ,direction, text): # 0:AI ; 1:Human
