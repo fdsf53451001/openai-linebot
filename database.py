@@ -44,8 +44,19 @@ class database:
 
     def load_chat_amount_each_month(self):
         result = self.deal_sql_request("SELECT strftime('%Y-%m-%d', time / 1000, 'unixepoch') as day, COUNT(*) FROM Message GROUP BY day")
+        result = {r[0]:r[1] for r in result}
         return result
+    
+    def load_system_logs(self):
+        # logs = [{'time':'2020-01-01','status':'success' ,'text':'test'}]
+        logs = []
         
+        if len(logs)==0:
+            logs = [{'time':'','status':'success' ,'text':'all good'}]
+        
+        # if len(logs) < 10:
+        #     logs = logs + [{'time':'','status':'null' ,'text':''}]*(10-len(logs))
+        return logs
 
 if __name__ == '__main__':
     db = database()

@@ -26,10 +26,14 @@ class ChatGPT:
                 role = 'user'
             message_list.append({'role':role,'content':row[1]})
 
-        response = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",
-            messages=message_list
-            )
+        try:
+            response = openai.ChatCompletion.create(
+                model="gpt-3.5-turbo",
+                messages=message_list
+                )
 
-        #print(response)
-        return response['choices'][0]['message']['content']
+            #print(response)
+            return response['choices'][0]['message']['content']
+        
+        except openai.error.RateLimitError:
+            return None
