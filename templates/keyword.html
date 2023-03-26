@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+
+{%block PAGE_NAME%}ChatGPT - Keyword{%endblock%}
+
+{%block PAGEUP_SCRIPT%}
+<!-- Custom styles for this page -->
+<link href="{{url_for('static',filename='vendor/datatables/dataTables.bootstrap4.min.css')}}" rel="stylesheet">
+{%endblock%}
+
+{%block PAGE%}
+<!-- Page Heading -->
+<h1 class="h3 mb-2 text-gray-800">關鍵字應答模式</h1>
+<!-- <p class="mb-4">DataTables is a third party plugin that is used to generate the demo table below.
+    For more information about DataTables, please visit the <a target="_blank"
+        href="https://datatables.net">official DataTables documentation</a>.</p> -->
+<br/>
+<!-- DataTales Example -->
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">關鍵字列表</h6>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Enable</th>
+                        <th>Keyword</th>
+                        <th>Reply</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tfoot>
+                    <tr>
+                        <th>ID</th>
+                        <th>Enable</th>
+                        <th>Keyword</th>
+                        <th>Reply</th>
+                        <th>Action</th>
+                    </tr>
+                </tfoot>
+                <tbody id="table-content">
+                    <tr>
+                        <td>0</td>
+                        <td><input type="checkbox" id="input-enable" checked></td>
+                        <td><input type="text" id="input-keyword" class="form-control form-control-sm" aria-describedby="inputGroup-sizing-sm"></td>
+                        <td><input type="text" id="input-reply" class="form-control form-control-sm" aria-describedby="inputGroup-sizing-sm"></td>
+                        <td><button type="button" id="input-send" class="btn btn-outline-primary btn-sm" onclick="add_keyword()">ADD</button></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{%endblock%}
+
+{%block PAGEDOWN_SCRIPT%}
+
+<!-- Bootstrap core JavaScript-->
+<script src="{{url_for('static',filename='vendor/jquery/jquery.min.js')}}"></script>
+<script src="{{url_for('static',filename='vendor/bootstrap/js/bootstrap.bundle.min.js')}}"></script>
+
+<!-- Core plugin JavaScript-->
+<script src="{{url_for('static',filename='vendor/jquery-easing/jquery.easing.min.js')}}"></script>
+
+<!-- Page level plugins -->
+<script src="{{url_for('static',filename='vendor/datatables/jquery.dataTables.min.js')}}"></script>
+<script src="{{url_for('static',filename='vendor/datatables/dataTables.bootstrap4.min.js')}}"></script>
+
+<!-- Page level custom scripts -->
+<script src="{{url_for('static',filename='js/demo/datatables-demo.js')}}"></script>
+
+<script>
+    $KEYWORD_DATA = {{ PASS_DATA['KEYWORD_DATA'] | tojson | safe}};
+    $KEYWORD_DATA = JSON.parse($KEYWORD_DATA);
+     
+    function updateTable() {
+        var table = document.getElementById("table-content");
+        // table.innerHTML = "";
+        for (let i = 0; i < $KEYWORD_DATA.length; i++) {
+            console.log($KEYWORD_DATA[i])
+            let row = table.insertRow(i);
+            row.insertCell(0).innerHTML = $KEYWORD_DATA[i][0];
+            row.insertCell(1).innerHTML = $KEYWORD_DATA[i][1];
+            row.insertCell(2).innerHTML = $KEYWORD_DATA[i][2];
+            row.insertCell(3).innerHTML = $KEYWORD_DATA[i][3];
+            row.insertCell(4).innerHTML = '<button type="button" id="input-send" class="btn btn-outline-danger btn-sm" onclick="delete_keyword('+$KEYWORD_DATA[i][0]+')">REMOVE</button>';
+        }
+    }
+
+    function add_keyword(){
+        var enable = document.getElementById("input-enable").checked;
+        if(enable){enable = "1";}else{enable = "0";}
+        var keyword = document.getElementById("input-keyword").value;
+        var reply = document.getElementById("input-reply").value;
+        var data = {
+            "enable": enable,
+            "keyword": keyword,
+            "reply": reply,
+            "note": ""
+        }
+        $.ajax({
+            url: "/api/keywords?sid={{PASS_DATA['SID']}}",
+            type: "POST",
+            data: JSON.stringify(data),
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            success: function (data) {
+                    location.reload();
+            },
+            error: function (err) {
+                alert(err.responseText);
+            }
+        });
+    }
+
+    function delete_keyword(id){
+        $.ajax({
+            url: "/api/keyword/"+id+"?sid={{PASS_DATA['SID']}}",
+            type: "DELETE",
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            success: function (data) {
+                    location.reload();
+            },
+            error: function (err) {
+                alert(err.responseText);
+            }
+        });
+    }
+
+    updateTable();
+</script>
+
+{%endblock%}

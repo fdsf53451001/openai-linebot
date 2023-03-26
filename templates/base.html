@@ -13,13 +13,13 @@
 
     <!-- Custom fonts for this template-->
     <link href="{{url_for('static',filename='vendor/fontawesome-free/css/all.min.css')}}" rel="stylesheet" type="text/css">
-    <link
-        href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
-        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
 
     <!-- Custom styles for this template-->
     <link href="{{url_for('static',filename='css/sb-admin-2.min.css')}}" rel="stylesheet">
 
+    {%block PAGEUP_SCRIPT%}{%endblock%}
 </head>
 
 <body id="page-top">
@@ -49,55 +49,60 @@
             </li>
 
             <li class="nav-item">
-                <a class="nav-link" href="index.html">
+                <a class="nav-link" href="index.html?sid={{PASS_DATA['SID']}}">
                     <i class="fas fa-fw fa-tachometer-alt"></i>
                     <span>即時訊息</span></a>
             </li>
 
             <li class="nav-item">
-                <a class="nav-link" href="index.html">
+                <a class="nav-link" href="index.html?sid={{PASS_DATA['SID']}}">
                     <i class="fas fa-fw fa-tachometer-alt"></i>
                     <span>使用者分析</span></a>
             </li>
 
             <li class="nav-item">
-                <a class="nav-link" href="index.html">
+                <a class="nav-link" href="index.html?sid={{PASS_DATA['SID']}}">
                     <i class="fas fa-fw fa-tachometer-alt"></i>
                     <span>對話分析</span></a>
             </li>
 
             <li class="nav-item">
-                <a class="nav-link" href="index.html">
+                <a class="nav-link" href="index.html?sid={{PASS_DATA['SID']}}">
                     <i class="fas fa-fw fa-tachometer-alt"></i>
                     <span>劇本分析</span></a>
             </li>
 
+            <hr class="sidebar-divider">
+            <div class="sidebar-heading">
+                進階設定
+            </div>
+
             <li class="nav-item">
-                <a class="nav-link" href="index.html">
+                <a class="nav-link" href="reply_setting?sid={{PASS_DATA['SID']}}">
                     <i class="fas fa-fw fa-tachometer-alt"></i>
                     <span>預設歡迎/回覆</span></a>
             </li>
 
             <li class="nav-item">
-                <a class="nav-link" href="index.html">
+                <a class="nav-link" href="index.html?sid={{PASS_DATA['SID']}}">
                     <i class="fas fa-fw fa-tachometer-alt"></i>
                     <span>ChatGPT聊天設定</span></a>
             </li>
 
             <li class="nav-item">
-                <a class="nav-link" href="index.html">
+                <a class="nav-link" href="keyword?sid={{PASS_DATA['SID']}}">
                     <i class="fas fa-fw fa-tachometer-alt"></i>
                     <span>關鍵字應答模式</span></a>
             </li>
 
             <li class="nav-item">
-                <a class="nav-link" href="index.html">
+                <a class="nav-link" href="index.html?sid={{PASS_DATA['SID']}}">
                     <i class="fas fa-fw fa-tachometer-alt"></i>
                     <span>劇本模式</span></a>
             </li>
 
             <li class="nav-item">
-                <a class="nav-link" href="index.html">
+                <a class="nav-link" href="index.html?sid={{PASS_DATA['SID']}}">
                     <i class="fas fa-fw fa-tachometer-alt"></i>
                     <span>推播系統</span></a>
             </li>
@@ -378,17 +383,9 @@
 
     <!-- Custom scripts for all pages-->
     <script src="{{url_for('static',filename='js/sb-admin-2.min.js')}}"></script>
-
-    <!-- Page level plugins -->
-    <script src="{{url_for('static',filename='vendor/chart.js/Chart.min.js')}}"></script>
-
-    <!-- Page level custom scripts -->
-    <script src="{{url_for('static',filename='js/demo/chart-area-demo.js')}}"></script>
-    <script src="{{url_for('static',filename='js/demo/chart-pie-demo.js')}}"></script>
-
-    <script>
-        {%block PAGEDOWN_SCRIPT%}{%endblock%}
-    </script>
+    
+    {%block PAGEDOWN_SCRIPT%}{%endblock%}
+    
 
 </body>
 

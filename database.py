@@ -50,15 +50,34 @@ class database:
     def load_system_logs(self):
         # logs = [{'time':'2020-01-01','status':'success' ,'text':'test'}]
         logs = []
-        
+
         if len(logs)==0:
             logs = [{'time':'','status':'success' ,'text':'all good'}]
         
         # if len(logs) < 10:
         #     logs = logs + [{'time':'','status':'null' ,'text':''}]*(10-len(logs))
         return logs
+    
+    def search_keyword(self, str):
+        result = self.deal_sql_request('SELECT enable,reply FROM Keyword WHERE instr("'+str+'",keyword)>0 ORDER BY length(keyword) DESC')
+        for r in result:
+            if r[0] == 1:   # keyword enable
+                return r[1]
+        return None
 
+    def load_keyword(self):
+        result = self.deal_sql_request('SELECT Id,Enable,Keyword,Reply,Note FROM Keyword')
+        return result
+
+    def add_keyword(self, enable, keyword, reply, note):
+        result = self.deal_sql_request('INSERT INTO Keyword (enable,keyword,reply,note) VALUES ("'+str(enable)+'","'+keyword+'","'+reply+'","'+note+'")')
+        return result
+    
+    def delete_keyword(self, keyword_id):
+        result = self.deal_sql_request('DELETE FROM Keyword WHERE Id='+str(keyword_id))
+        return result
+    
 if __name__ == '__main__':
     db = database()
-    data = db.load_chat_amount_each_month()
+    data = db.add_keyword(0,'test','test','test')
     print(data)
