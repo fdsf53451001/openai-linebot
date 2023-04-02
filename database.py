@@ -11,10 +11,30 @@ class database:
 
         try:
             self.c.execute('INSERT INTO Message (userId,time,direction,text) VALUES '+str((userId, time, direction, text)))
+            self.c.execute('SELECT last_insert_rowid()')
+            result = self.c.fetchall()
         except sqlite3.Error as err:
             print('ERR sqlite save failed!', err)
         self.conn.commit()
+        return result[0][0]
     
+    def save_reply(self, messageId, reply_mode, reply_rule):
+        if reply_rule==None: reply_rule=''
+        try:
+            self.c.execute('INSERT INTO Message_reply (messageId,reply_mode,reply_rule) VALUES '+str((messageId, reply_mode, reply_rule)))
+        except sqlite3.Error as err:
+            print('ERR sqlite save failed!', err)
+        self.conn.commit()
+
+    def search_message(self, messageId):
+        try:
+            self.c.execute('SELECT text FROM Message WHERE messageId=='+str(messageId))
+            result = self.c.fetchall()
+        except sqlite3.Error as err:
+            print('ERR sqlite save failed!', err)
+        self.conn.commit()
+        return result
+
     def deal_sql_request(self, command):
         try:
             self.c.execute(command)
@@ -47,6 +67,20 @@ class database:
         result = {r[0]:r[1] for r in result}
         return result
     
+    def load_lest_reply_id(self, user_id):
+        result = self.deal_sql_request('SELECT messageId FROM Message WHERE userId=="'+user_id+'" AND direction==0 ORDER BY time DESC LIMIT 1')
+        if result:
+            return result[0][0]
+        else:
+            return None
+
+    def check_reply_mode(self, messageId):
+        result = self.deal_sql_request('SELECT reply_mode,reply_rule FROM Message_reply WHERE messageId=='+str(messageId))
+        if result:
+            return result[0]
+        else:
+            return None
+
     def load_system_logs(self):
         # logs = [{'time':'2020-01-01','status':'success' ,'text':'test'}]
         logs = []
@@ -59,10 +93,10 @@ class database:
         return logs
     
     def search_keyword(self, str):
-        result = self.deal_sql_request('SELECT enable,reply FROM Keyword WHERE instr("'+str+'",keyword)>0 ORDER BY length(keyword) DESC')
+        result = self.deal_sql_request('SELECT enable,reply,id FROM Keyword WHERE instr("'+str+'",keyword)>0 ORDER BY length(keyword) DESC')
         for r in result:
             if r[0] == 1:   # keyword enable
-                return r[1]
+                return (r[1],r[2])
         return None
 
     def load_keyword(self):
@@ -77,7 +111,19 @@ class database:
         result = self.deal_sql_request('DELETE FROM Keyword WHERE Id='+str(keyword_id))
         return result
     
+    def load_all_story(self):
+        result = self.deal_sql_request('SELECT Story.story_id, enable, sentence_id, condiction FROM Story,Story_sentence WHERE Story.story_id==Story_sentence.story_id AND Story_sentence.type==0')
+        return result
+
+    def load_next_sentence(self, sentence_id):
+        result = self.deal_sql_request('SELECT sentence2 FROM Story_choice WHERE sentence1=='+str(sentence_id))
+        return result
+
+    def load_sentence(self, sentence_id):
+        result = self.deal_sql_request('SELECT sentence_id, type, output, condiction FROM Story_sentence WHERE sentence_id=='+str(sentence_id))
+        return result[0]
+
 if __name__ == '__main__':
     db = database()
-    data = db.add_keyword(0,'test','test','test')
+    data = db.load_next_sentence(1)
     print(data)

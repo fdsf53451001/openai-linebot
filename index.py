@@ -19,18 +19,19 @@ from chatgpt import ChatGPT
 from database import database
 from MessageHandler import MessageHandler
 from APIHandler import APIHandler
+from chat_platform.line_platform import line_platform
 
 from Keyword import Keywords, Keyword
 from Setting import ChatSetting
 
 argument = Argument()
-line_bot_api = LineBotApi(argument.linebot_apt)
-line_handler = WebhookHandler(argument.webhook_secret)
 
 db = database()
 chatgpt = ChatGPT(db,argument.openai_key)
 messageHandler = MessageHandler(db,chatgpt)
 apiHandler = APIHandler(db)
+
+line = line_platform(argument, messageHandler)
 
 app = Flask(__name__)
 api = Api(app)
@@ -60,35 +61,16 @@ def index():
 
 @app.route("/webhook", methods=['POST'])
 def callback():
-    # get X-Line-Signature header value
-    signature = request.headers['X-Line-Signature']
-    # get request body as text
-    body = request.get_data(as_text=True)
-    # app.logger.info("Request body: " + body)
-    # handle webhook body
-    try:
-        line_handler.handle(body, signature)
-    except InvalidSignatureError:
-        abort(400)
-    return 'OK'
+    result = line.receive(request)
+    return result
 
-@line_handler.add(MessageEvent, message=TextMessage)
-def handle_message(event):
-    if event.message.type != "text":
-        return
-    
-    user_id = event.source.user_id
-    receive_text = event.message.text
-    receive_timestamp = event.timestamp
-
-    logging.info('receive from %s %s',user_id,receive_text)
-
-    reply_msg = messageHandler.handdle(user_id, receive_text, receive_timestamp)
-
-    logging.info('reply to %s %s',user_id,reply_msg)
-    line_bot_api.reply_message(
-            event.reply_token,
-            TextSendMessage(text=reply_msg))
+def talk_test():
+    while True:
+        user_id = 'testing'
+        receive_text = input('text:')
+        receive_timestamp = int(time.time()*1000)
+        reply_msg = messageHandler.handdle(user_id, receive_text, receive_timestamp)
+        print('reply:',reply_msg)
 
 @app.route('/keyword')
 def keyword_page():
@@ -120,6 +102,19 @@ def reply_setting():
                  'CHATGPT_REPLY': "checked" if argument.read_conf('function','chatgpt_reply')=='true' else ""
                 }
     return render_template('reply_setting.html',PASS_DATA=PASS_DATA)
+
+@app.route('/story')
+def story():
+    user_config = apiHandler.check_request_username(request)
+    if not user_config:
+        return redirect(url_for('login'))
+    else:
+        (sid,username) = user_config
+
+    PASS_DATA = {'USER_NAME':username,
+                 'SID':sid
+                }
+    return render_template('story.html',PASS_DATA=PASS_DATA)
 
 @app.route('/login')
 def login():
@@ -160,11 +155,16 @@ def page_not_found(error):
                 }
     return render_template('404.html',PASS_DATA=PASS_DATA)  # 錯誤回傳
 
+def test():
+    print('test')
+
 api.add_resource(Keywords, '/api/keywords',resource_class_kwargs={'db':db,'apiHandler':apiHandler})
 api.add_resource(Keyword, '/api/keyword/<string:keyword_id>',resource_class_kwargs={'db':db,'apiHandler':apiHandler})
 api.add_resource(ChatSetting, '/api/setting/chat/<string:key>',resource_class_kwargs={'apiHandler':apiHandler})
 
 if __name__ == "__main__":
     # run_with_ngrok(app)
-    app.run(host='0.0.0.0',port=8000,debug=True)
+    # app.run(host='0.0.0.0',port=8000,debug=True)
     # app.run(host='0.0.0.0',port=443,ssl_context=('cert/cert.pem', 'cert/privkey.pem'))
+
+    talk_test()
