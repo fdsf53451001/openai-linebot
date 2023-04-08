@@ -20,41 +20,73 @@
             <div class="card-header">
                 <h6 class="m-0 font-weight-bold text-primary">劇本</h6>
             </div>
-            <div class="card-body">
-                hi
+            <div id="all_story_name">
             </div>
-            <div class="card-body">
-                hi
-            </div>
-            <div class="card-body">
-                hi
-            </div>
-            <div class="card-body">
-                hi
-            </div>
-            <div class="card-body">
-                hi
-            </div>
-            <div class="card-body">
-                hi
-            </div>
-            <div class="card-body">
-                hi
-            </div>
-            <div class="card-body">
-                hi
-            </div>
+                <div class="card-body" style="display: flex; justify-content: center;">
+                    <button type="button" id="input-send" class="btn btn-outline-danger btn-sm" onclick="create_new_story()">新增劇本</button> 
+                </div>
         </div>
     </div>
     <div class="col-10">
-        <!-- Default Card Example -->
-        <div class="card mb-4">
-            <div class="card-header">
-                <h6 class="m-0 font-weight-bold text-primary">編輯劇本</h6>
+        <!-- DataTales Example -->
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <div id="story_name_container" style="display: flex;">
+                    <h6 class="m-0 font-weight-bold text-primary">點擊左側選擇劇本</h6>
+                </div>
             </div>
-            <div class="card-body">
-                This card uses Bootstrap's default styling with no utility classes added. Global
-                styles are the only things modifying the look and feel of this default card example.
+            <div class="card-body input-group input-group-sm">
+                <div class="table-responsive">
+                    <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>父節點ID</th>
+                                <th>節點類型</th>
+                                <th>輸出 or 條件</th>
+                                <th>動作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-content">
+                            <!-- <tr>
+                                <td>0</td>
+                                <td></td>
+                                <td>
+                                    <div class="btn-group btn-group-sm" role="group" aria-label="Basic radio toggle button group">
+                                        <input type="radio" class="btn-check" name="sentencw0" id="sentence0-1" autocomplete="off" checked>
+                                        <label class="btn btn-outline-primary" for="sentence0-1">觸發條件</label>
+                                      </div>
+                                </td>
+                                <td><input type="text" id="input-reply" class="form-control form-control-sm" aria-describedby="inputGroup-sizing-sm"></td>
+                                <td>
+                                    <button type="button" id="input-send" class="btn btn-outline-danger btn-sm" onclick="add_keyword()">+</button>  
+                                </td>
+                            </tr> -->
+                            <!-- <tr>
+                                <td>0</td>
+                                <td><input type="text" id="input-keyword" class="form-control form-control-sm" aria-describedby="inputGroup-sizing-sm" style="width: 50px;"></td>
+                                <td>
+                                    <div class="btn-group btn-group-sm" role="group" aria-label="Basic radio toggle button group">
+                                        <input type="radio" class="btn-check" name="btnradio" id="btnradio1" autocomplete="off" checked>
+                                        <label class="btn btn-outline-primary" for="btnradio1">輸出</label>
+                                      
+                                        <input type="radio" class="btn-check" name="btnradio" id="btnradio2" autocomplete="off">
+                                        <label class="btn btn-outline-primary" for="btnradio2">分支</label>
+                                      
+                                        <input type="radio" class="btn-check" name="btnradio" id="btnradio3" autocomplete="off">
+                                        <label class="btn btn-outline-primary" for="btnradio3">選項</label>
+                                      </div>
+                                </td>
+                                <td><input type="text" id="input-reply" class="form-control form-control-sm" aria-describedby="inputGroup-sizing-sm"></td>
+                                <td>
+                                    <button type="button" id="input-send" class="btn btn-outline-danger btn-sm" onclick="add_keyword()">+</button>
+                                    <button type="button" id="input-send" class="btn btn-outline-primary btn-sm" onclick="add_keyword()">-</button>
+                                    
+                                </td>
+                            </tr> -->
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
@@ -62,5 +94,203 @@
 {%endblock%}
 
 {%block PAGEDOWN_SCRIPT%}
+<script>
+    var story_name_list = []
+    var story_content = []
 
+    function get_story_name(){
+        $.ajax({
+            url: "/api/story_name"+"?sid={{PASS_DATA['SID']}}",
+            type: "GET",
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            success: function (data) {
+                data = JSON.parse(data)
+                story_name_list = data
+                for(var i=0;i<data.length;i++){
+                    var story_name = data[i][1]
+                    var story_id = data[i][0]
+                    var story_html = '<div class="card-body" style="display: flex; justify-content: center;">\
+                                        <button type="button" id="input-send" class="btn btn-outline-primary btn-sm" onclick="load_story_content('+story_id+',\''+story_name+'\')">'+story_name+'</button>\
+                                        </div>\
+                                        '
+                    $('#all_story_name').append(story_html)
+                }             
+            },
+            error: function (err) {
+                alert(err.responseText);
+            }
+        });
+    }
+
+    function load_story_content(story_id,story_name){
+        $.ajax({
+            url: "/api/story_sentence/"+story_id+"?sid={{PASS_DATA['SID']}}",
+            type: "GET",
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            success: function (data) {
+                data = JSON.parse(data)
+                story_content = data
+                show_story_content()           
+            },
+            error: function (err) {
+                alert(err.responseText);
+            }
+        });
+
+        $('#story_name_container').empty()
+        $('#story_name_container').append('<input type="text" id="input-story-name" class="form-control form-control-sm" aria-describedby="inputGroup-sizing-sm" style="width: 200px;" value="'+story_name+'">\
+                                            <div style="margin-left:auto;">\
+                                                <button type="button" id="input-send" class="btn btn-primary btn-sm" onclick="save_story('+story_id+')">儲存</button> \
+                                                <button type="button" id="input-send" class="btn btn-danger btn-sm" onclick="delete_story('+story_id+')">刪除</button> \
+                                            </div>\
+                                            ') 
+    }
+
+    function clear_story_sentence_display(){
+        $('#table-content').empty()
+    }
+
+    function create_new_story(){
+        clear_story_sentence_display()
+        story_content = [[0,0,0,"請輸入觸發條件"]]
+        show_story_content()
+        $('#story_name_container').empty()
+        $('#story_name_container').append('<input type="text" id="input-story-name" class="form-control form-control-sm" aria-describedby="inputGroup-sizing-sm" style="width: 200px;" value="'+'請輸入劇本名稱'+'">\
+                                            <div style="margin-left:auto;">\
+                                                <button type="button" id="input-send" class="btn btn-primary btn-sm" onclick="save_story(0)">儲存</button> \
+                                                <button type="button" id="input-send" class="btn btn-danger btn-sm" onclick="delete_story(0)">刪除</button> \
+                                            </div>\
+                                            ') 
+    }
+
+    function delete_story(story_id){
+        $.ajax({
+            url: "/api/story_sentence/"+story_id+"?sid={{PASS_DATA['SID']}}",
+            type: "DELETE",
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            success: function (data) {
+                window.location.reload()       
+            },
+            error: function (err) {
+                alert(err.responseText);
+            }
+        });
+    }
+
+    function show_story_content(){
+        clear_story_sentence_display()
+        let data = story_content
+        for(let i=0;i<data.length;i++){
+            let sentence_id = data[i][0]
+            let parent_id = data[i][1]
+            let type = data[i][2]
+            let outputorcondiction = data[i][3]
+
+            let html_text = ""
+            if(type==0){  //start keyword
+                html_text += '<tr> \
+                                <td>0</td> \
+                                <td>0</td> \
+                                <td> \
+                                    <div class="btn-group btn-group-sm" role="group" aria-label="Basic radio toggle button group">\
+                                        <input type="radio" class="btn-check" name="sentencw0" id="sentence0-1" autocomplete="off" checked>\
+                                        <label class="btn btn-outline-primary" for="sentence0-1">觸發條件</label>\
+                                      </div>\
+                                </td>\
+                                <td><input type="text" id="input-outputorcondiction'+i+'" class="form-control form-control-sm" aria-describedby="inputGroup-sizing-sm" onchange="on_sentence_output_change('+i+')" value="'+outputorcondiction+'"></td>\
+                                <td>\
+                                    <button type="button" id="input-send" class="btn btn-outline-danger btn-sm" onclick="on_sentence_add('+i+')">+</button> \
+                                </td>\
+                            </tr>\
+                            '
+            }else{
+                let type1 = ""
+                let type2 = ""
+                let type3 = ""
+                if(type==1){
+                    type1 = "checked"
+                }else if(type==2){
+                    type2 = "checked"
+                }else if(type==3){
+                    type3 = "checked"
+                }
+
+                html_text += '<tr>\
+                                <td>'+i+'</td>\
+                                <td><input type="text" id="input-parent-id'+i+'" class="form-control form-control-sm" aria-describedby="inputGroup-sizing-sm" style="width: 50px;" onchange="on_sentence_parent_change('+i+')" value="'+parent_id+'"></td>\
+                                <td>\
+                                    <div class="btn-group btn-group-sm" role="group" aria-label="Basic radio toggle button group">\
+                                        <input type="radio" class="btn-check" name="btnradio'+i+'" id="btnradio'+i+'-1" onclick="on_sentence_type_change('+i+','+1+')" autocomplete="off" '+type1+'>\
+                                        <label class="btn btn-outline-primary" for="btnradio'+i+'-1">分支</label>\
+                                        <input type="radio" class="btn-check" name="btnradio'+i+'" id="btnradio'+i+'-2" onclick="on_sentence_type_change('+i+','+2+')" autocomplete="off" '+type2+'>\
+                                        <label class="btn btn-outline-primary" for="btnradio'+i+'-2">選項</label>\
+                                        <input type="radio" class="btn-check" name="btnradio'+i+'" id="btnradio'+i+'-3" onclick="on_sentence_type_change('+i+','+3+')" autocomplete="off" '+type3+'>\
+                                        <label class="btn btn-outline-primary" for="btnradio'+i+'-3">輸出</label>\
+                                      </div>\
+                                </td>\
+                                <td><input type="text" id="input-outputorcondiction'+i+'" class="form-control form-control-sm" aria-describedby="inputGroup-sizing-sm" onchange="on_sentence_output_change('+i+')" value="'+outputorcondiction+'"></td>\
+                                <td>\
+                                    <button type="button" id="input-send" class="btn btn-outline-danger btn-sm" onclick="on_sentence_add('+i+')">+</button>\
+                                    <button type="button" id="input-send" class="btn btn-outline-primary btn-sm" onclick="on_sentence_delete('+i+')">-</button>\
+                                </td>\
+                            </tr>\
+                            '
+
+            }
+            $('#table-content').append(html_text)
+        }
+    }
+
+    function on_sentence_parent_change(id){
+        story_content[id][1] = $('#input-parent-id'+id).val()
+    }
+
+    function on_sentence_output_change(id){
+        story_content[id][3] = $('#input-outputorcondiction'+id).val()
+    }
+
+    function on_sentence_type_change(id,type){
+        story_content[id][2] = type
+    }
+
+    function on_sentence_add(id){
+        let item = [id+1,0,3,"",""]
+        story_content.splice(id+1, 0, item);
+        show_story_content()
+    }
+
+    function on_sentence_delete(id){
+        story_content.splice(id, 1);
+        show_story_content()
+    }
+
+    function save_story(id){
+        let story_name = $('#input-story-name').val()
+        let story_content_json = JSON.stringify(story_content)
+        console.log(id, story_name, story_content_json)
+        $.ajax({
+            url: '/api/story_sentence/'+id+"?sid={{PASS_DATA['SID']}}",
+            type: 'POST',
+            data: JSON.stringify({
+                'story_name': story_name,
+                'story_content': story_content,
+            }),
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            success: function (data) {
+                console.log(data)
+                window.location.reload();
+            },
+            error: function (data) {
+                alert(data)
+            }
+        });
+    }
+
+    get_story_name()
+    // load_story_content("1")
+</script>
 {%endblock%}

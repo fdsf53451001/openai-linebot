@@ -1,16 +1,15 @@
-from chat_platform.platform import Platform
 from linebot import LineBotApi, WebhookHandler
 from linebot.exceptions import InvalidSignatureError
 from linebot.models import MessageEvent, TextMessage, TextSendMessage
 import logging
 
-class line_platform(Platform):
+class line_platform():
     def __init__(self, argument, messageHandler):
         self.line_bot_api = LineBotApi(argument.linebot_apt)
         self.line_handler = WebhookHandler(argument.webhook_secret)
         self.line_handler.add(MessageEvent, message=TextMessage)(self.handle_message)
         self.messageHandler = messageHandler
-        self.messageHandler.set_platform(self)
+        self.messageHandler.set_platform('line',self)
 
     def receive(self,request):
         # get X-Line-Signature header value
@@ -34,11 +33,11 @@ class line_platform(Platform):
         user_id = event.source.user_id
         receive_text = event.message.text
         receive_timestamp = event.timestamp
-        logging.info('receive from %s %s',user_id,receive_text)
+        # logging.info('receive from %s %s',user_id,receive_text)
 
-        reply_msg = self.messageHandler.handdle(user_id, receive_text, receive_timestamp)
+        reply_msg = self.messageHandler.handdle('line',user_id, receive_text, receive_timestamp)
 
-        logging.info('reply to %s %s',user_id,reply_msg)
+        # logging.info('reply to %s %s',user_id,reply_msg)
         self.line_bot_api.reply_message(
                 event.reply_token,
                 TextSendMessage(text=reply_msg))

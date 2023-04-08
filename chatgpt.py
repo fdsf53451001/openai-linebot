@@ -24,7 +24,7 @@ class ChatGPT:
             message_list.append({'role':role,'content':row[1]})
 
         try:
-            logging.info('senf to openai %s',message_list[-1])
+            logging.info('send to openai %s',message_list[-1])
             response = openai.ChatCompletion.create(
                 model="gpt-3.5-turbo",
                 messages=message_list

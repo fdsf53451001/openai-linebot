@@ -1,48 +1,38 @@
 import sqlite3
 import time
+import threading
 
 class database:
-    def __init__(self):
+    def __init__(self, db_lock):
         self.conn = sqlite3.connect('data/chat.db', check_same_thread=False)
         self.c = self.conn.cursor()
+        self.db_lock = db_lock
+
+    def deal_sql_request(self, command):
+        try:
+            self.db_lock.acquire()
+            self.c.execute(command)
+            result = self.c.fetchall()
+            self.conn.commit()
+        except sqlite3.Error as err:
+            print('ERR request failed!', command, err)
+            result = None
+        finally:
+            self.db_lock.release()
+            return result
 
     def save_chat(self, userId, time ,direction, text): # 0:AI ; 1:Human
         # print(userId, time , direction, text)
-
-        try:
-            self.c.execute('INSERT INTO Message (userId,time,direction,text) VALUES '+str((userId, time, direction, text)))
-            self.c.execute('SELECT last_insert_rowid()')
-            result = self.c.fetchall()
-        except sqlite3.Error as err:
-            print('ERR sqlite save failed!', err)
-        self.conn.commit()
+        self.deal_sql_request('INSERT INTO Message (userId,time,direction,text) VALUES '+str((userId, time, direction, text)))
+        result = self.deal_sql_request('SELECT last_insert_rowid()')
         return result[0][0]
     
     def save_reply(self, messageId, reply_mode, reply_rule):
         if reply_rule==None: reply_rule=''
-        try:
-            self.c.execute('INSERT INTO Message_reply (messageId,reply_mode,reply_rule) VALUES '+str((messageId, reply_mode, reply_rule)))
-        except sqlite3.Error as err:
-            print('ERR sqlite save failed!', err)
-        self.conn.commit()
+        self.deal_sql_request('INSERT INTO Message_reply (messageId,reply_mode,reply_rule) VALUES '+str((messageId, reply_mode, reply_rule)))
 
     def search_message(self, messageId):
-        try:
-            self.c.execute('SELECT text FROM Message WHERE messageId=='+str(messageId))
-            result = self.c.fetchall()
-        except sqlite3.Error as err:
-            print('ERR sqlite save failed!', err)
-        self.conn.commit()
-        return result
-
-    def deal_sql_request(self, command):
-        try:
-            self.c.execute(command)
-            result = self.c.fetchall()
-        except sqlite3.Error as err:
-            print('ERR request failed!', command, err)
-            result = None
-        self.conn.commit()
+        result = self.deal_sql_request('SELECT text FROM Message WHERE messageId=='+str(messageId))
         return result
 
     def load_chat(self, userId, count=5):
@@ -112,18 +102,49 @@ class database:
         return result
     
     def load_all_story(self):
-        result = self.deal_sql_request('SELECT Story.story_id, enable, sentence_id, condiction FROM Story,Story_sentence WHERE Story.story_id==Story_sentence.story_id AND Story_sentence.type==0')
+        result = self.deal_sql_request('SELECT Story.story_id, enable, sentence_id, output_or_condiction FROM Story,Story_sentence WHERE Story.story_id==Story_sentence.story_id AND Story_sentence.type==0')
+        return result
+
+    def load_story_name(self):
+        result = self.deal_sql_request('SELECT story_id, name FROM Story')
         return result
 
     def load_next_sentence(self, sentence_id):
-        result = self.deal_sql_request('SELECT sentence2 FROM Story_choice WHERE sentence1=='+str(sentence_id))
+        result = self.deal_sql_request('SELECT sentence_id FROM Story_sentence WHERE parent_id=='+str(sentence_id))
         return result
 
     def load_sentence(self, sentence_id):
-        result = self.deal_sql_request('SELECT sentence_id, type, output, condiction FROM Story_sentence WHERE sentence_id=='+str(sentence_id))
+        result = self.deal_sql_request('SELECT sentence_id, type, output_or_condiction FROM Story_sentence WHERE sentence_id=='+str(sentence_id))
         return result[0]
 
+    def load_sentences_from_story(self, story_id):
+        result = self.deal_sql_request('SELECT sentence_id,parent_id,type,output_or_condiction FROM Story_sentence WHERE story_id=='+str(story_id))
+        return result
+    
+    def add_story_name(self, name):
+        result = self.deal_sql_request('INSERT INTO Story (enable, name) VALUES (1,"'+name+'")')
+        if result==None: return None
+        result = self.deal_sql_request('SELECT last_insert_rowid()')
+        return result[0][0]
+
+    def add_story_sentence(self, story_id, parent_id, type, output_or_condiction):
+        story_id = str(story_id)
+        parent_id = str(parent_id)
+        type = str(type)
+        result = self.deal_sql_request('INSERT INTO Story_sentence (story_id,parent_id,type,output_or_condiction) VALUES ("'+story_id+'","'+parent_id+'","'+type+'","'+output_or_condiction+'")')
+        if result==None: return None
+        result = self.deal_sql_request('SELECT last_insert_rowid()')
+        return result[0][0]
+
+    def delete_storyname_id(self, story_id):
+        result = self.deal_sql_request('DELETE FROM Story WHERE story_id=='+str(story_id))
+        return result
+
+    def delete_storysentence_id(self, story_id):
+        result = self.deal_sql_request('DELETE FROM Story_sentence WHERE story_id=='+str(story_id))
+        return result
+
 if __name__ == '__main__':
-    db = database()
-    data = db.load_next_sentence(1)
+    db = database(threading.Lock())
+    data = db.add_story_sentence(2,0,3,'faq')
     print(data)
