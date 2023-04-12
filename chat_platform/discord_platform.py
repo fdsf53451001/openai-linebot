@@ -2,6 +2,7 @@ import discord
 import logging
 import threading
 from datetime import datetime
+import asyncio
 
 class discord_platform():
     def __init__(self, argument, messageHandler):
@@ -45,6 +46,10 @@ class DiscordClient(discord.Client):
         # logging.info('reply to %s %s',user_id,reply_msg)
         await message.channel.send(reply_msg)
 
-    def send_to_user(self, user_id,message):
-        self.get_channel(int(user_id)).send(message)
+    def send_to_user(self, user_id, message):
+        channel = self.get_channel(int(user_id))
+        asyncio.run_coroutine_threadsafe(channel.send(message),asyncio.get_running_loop())
+        # asyncio.run(channel.send(message))
+        # await channel.send(message)
+        # asyncio.get_event_loop().call_soon_threadsafe(channel.send(message))
     

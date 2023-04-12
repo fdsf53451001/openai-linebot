@@ -9,9 +9,7 @@
 
 {%block PAGE%}
 <h1 class="h3 mb-2 text-gray-800">劇本模式</h1>
-<!-- <p class="mb-4">DataTables is a third party plugin that is used to generate the demo table below.
-    For more information about DataTables, please visit the <a target="_blank"
-        href="https://datatables.net">official DataTables documentation</a>.</p> -->
+<p class="mb-4">劇本模式支持正規表達式，請輸入"[Regex] 表達式內容"。支持自定義程式執行，請輸出"[ExtCode] 程式"。</p>
 <br/>
 <div class="row">
     <div class="col-2">
@@ -192,7 +190,7 @@
             let html_text = ""
             if(type==0){  //start keyword
                 html_text += '<tr> \
-                                <td>0</td> \
+                                <td>'+sentence_id+'</td> \
                                 <td>0</td> \
                                 <td> \
                                     <div class="btn-group btn-group-sm" role="group" aria-label="Basic radio toggle button group">\
@@ -219,7 +217,7 @@
                 }
 
                 html_text += '<tr>\
-                                <td>'+i+'</td>\
+                                <td>'+sentence_id+'</td>\
                                 <td><input type="text" id="input-parent-id'+i+'" class="form-control form-control-sm" aria-describedby="inputGroup-sizing-sm" style="width: 50px;" onchange="on_sentence_parent_change('+i+')" value="'+parent_id+'"></td>\
                                 <td>\
                                     <div class="btn-group btn-group-sm" role="group" aria-label="Basic radio toggle button group">\

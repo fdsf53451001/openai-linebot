@@ -1,6 +1,8 @@
 import threading
 import time
 import logging
+import asyncio
+import re
 
 from Argument import Argument
 from ExternalCodeRunner import ExternalCodeRunner
@@ -63,10 +65,17 @@ class MessageHandler:
         logging.info('send to [%s] %s %s',platform_name,user_id,msg)
 
         if not platform_name=='command_line':
-            self.platforms[platform_name].send(user_id, msg)
+            self.platforms[platform_name].send_to_user(user_id, msg)
 
     def keyword_hold(self,receive_text):
-        return self.db.search_keyword(receive_text)
+        # return self.db.search_keyword(receive_text)
+        keywords = self.db.load_keyword()
+        for keyword_row in keywords:
+            if not keyword_row[1]: continue
+            if self.check_input_rule(keyword_row[2], receive_text):
+                return (keyword_row[3],keyword_row[0])
+        return None
+
     
     def story_hold(self, platform_name, user_id, receive_text):
         # node type : 0=entry, 1=fork, 2=condiction, 3=response 
@@ -84,7 +93,7 @@ class MessageHandler:
         story_content = self.db.load_all_story()
         for story in story_content:
             if story[1] == 1: # enable
-                if story[3] in receive_text:
+                if self.check_input_rule(story[3], receive_text):
                     return self.story_hold_continue(platform_name, user_id, story[2], receive_text)
         # failed to match
         return (None,None)
@@ -100,7 +109,7 @@ class MessageHandler:
             if sentence[1]==1 or sentence[1]==3:
                 return (sentence[0],sentence[2])
             elif sentence[1]==2:
-                if sentence[2] in receive_text:
+                if self.check_input_rule(sentence[2], receive_text):
                     return self.story_hold_continue(platform_name,user_id, sentence[0], receive_text)
         # failed to match
         self.send_to_user(platform_name, user_id, "無法繼續對話，將由OpenAI回覆")
@@ -118,7 +127,7 @@ class MessageHandler:
             pass    # waiting reply
         
         if thread.is_alive(): # send warning
-            self.send_to_user(platform_name, user_id, "waiting reply...")
+            self.send_to_user(platform_name, user_id, "等待回應中...")
             logging.warning("OpenAI reply timeout for "+timeout_warning+" seconds!")
         
         while thread.is_alive() and time.time()-s_time < int(timeout_cut):
@@ -129,7 +138,8 @@ class MessageHandler:
             reply_msg = result[0]
             reply_msg = reply_msg.replace("AI:", "", 1)
         else:
-            reply_msg = "OpenAI not responding !"
+            reply_msg = "OpenAI 沒有回應或花費太久，請稍候再嘗試！"
+            self.send_to_user(platform_name, user_id, reply_msg)
             logging.warning(reply_msg)
         
         return reply_msg
@@ -138,3 +148,12 @@ class MessageHandler:
         reply_msg = self.chatgpt.get_response(user_id)
         result.append(reply_msg)
 
+    def check_input_rule(self, rule, receive_text):
+        if rule.startswith('[Regex] '):
+            regex = re.compile(rule[8:])
+            match = regex.search(receive_text)
+            return match
+        else:
+            if rule in receive_text:
+                return True
+        return False

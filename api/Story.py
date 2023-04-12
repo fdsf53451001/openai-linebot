@@ -55,7 +55,7 @@ class Story_sentence(Resource):
             sentencce_id = self.db.add_story_sentence(story_id, story_content[i][1], story_content[i][2], story_content[i][3])
             # fix auto fillin sentence id
             for j in range(i,len(story_content)):
-                if str(story_content[j][1]) == str(i):
+                if str(story_content[j][1]) == str(story_content[i][0]):
                     story_content[j][1] = sentencce_id
 
 
