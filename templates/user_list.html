@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+
+{%block PAGE_NAME%}ChatGPT - Users{%endblock%}
+
+{%block PAGEUP_SCRIPT%}
+<!-- Custom styles for this page -->
+<link href="{{url_for('static',filename='vendor/datatables/dataTables.bootstrap4.min.css')}}" rel="stylesheet">
+{%endblock%}
+
+{%block PAGE%}
+<!-- Page Heading -->
+<h1 class="h3 mb-2 text-gray-800">使用者</h1>
+<!-- <p class="mb-4">關鍵字模式支持正規表達式，請輸入"[Regex] 表達式內容"。支持自定義程式執行，請輸出"[ExtCode] 程式"。</p> -->
+<br/>
+<!-- DataTales Example -->
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">使用者列表</h6>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                <thead>
+                    <tr>
+                        <th>platform</th>
+                        <th>UUID</th>
+                        <th>ban</th>
+                        <th>photo</th>
+                        <th>name</th>
+                        <th>usage</th>
+                        <th>last_update</th>
+                        <th>tmp</th>
+                    </tr>
+                </thead>
+                <tbody id="table-content">
+
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{%endblock%}
+
+{%block PAGEDOWN_SCRIPT%}
+
+<!-- Bootstrap core JavaScript-->
+<script src="{{url_for('static',filename='vendor/jquery/jquery.min.js')}}"></script>
+<script src="{{url_for('static',filename='vendor/bootstrap/js/bootstrap.bundle.min.js')}}"></script>
+
+<!-- Core plugin JavaScript-->
+<script src="{{url_for('static',filename='vendor/jquery-easing/jquery.easing.min.js')}}"></script>
+
+<!-- Page level plugins -->
+<script src="{{url_for('static',filename='vendor/datatables/jquery.dataTables.min.js')}}"></script>
+<script src="{{url_for('static',filename='vendor/datatables/dataTables.bootstrap4.min.js')}}"></script>
+
+<!-- Page level custom scripts -->
+<script src="{{url_for('static',filename='js/demo/datatables-demo.js')}}"></script>
+
+<script>
+    $USERS_DATA = {{ PASS_DATA['USERS_DATA'] | tojson | safe}};
+    $USERS_DATA = JSON.parse($USERS_DATA);
+
+    function timestamp_to_str_format(timestamp){
+        date = new Date(timestamp);
+        var year = date.getFullYear();
+        var month = ("0" + (date.getMonth() + 1)).slice(-2);
+        var date = ("0" + date.getDate()).slice(-2);
+
+        return "" + year + "-" + month + "-" + date;
+    }
+
+    function updateTable() {
+        var table = document.getElementById("table-content");
+        // table.innerHTML = "";
+
+        for (let i = 0; i < $USERS_DATA.length; i++) {
+            let row = table.insertRow(i);
+            row.insertCell(0).innerHTML = $USERS_DATA[i][1];
+            row.insertCell(1).innerHTML = $USERS_DATA[i][0];
+            if ($USERS_DATA[i][2] == 1) {
+                row.insertCell(2).innerHTML = '<td><input type="checkbox" id="ban-'+$USERS_DATA[i][0]+'" onclick="ban_state_change(\''+$USERS_DATA[i][0]+'\')" checked></td>';
+            } else {
+                row.insertCell(2).innerHTML = '<td><input type="checkbox" id="ban-'+$USERS_DATA[i][0]+'" onclick="ban_state_change(\''+$USERS_DATA[i][0]+'\')"></td>';
+            }
+            row.insertCell(3).innerHTML = '<img class="img-profile rounded-circle" style="height: 30px;width: 30px;" src="'+$USERS_DATA[i][4]+'">';
+            row.insertCell(4).innerHTML = $USERS_DATA[i][3];
+            $USERS_DATA[i][5] = timestamp_to_str_format($USERS_DATA[i][5])
+            row.insertCell(5).innerHTML = $USERS_DATA[i][7];
+            row.insertCell(6).innerHTML = $USERS_DATA[i][5];
+            row.insertCell(7).innerHTML = $USERS_DATA[i][6];
+        }
+    }
+
+    function ban_state_change(UUID){
+        console.log("ban-"+UUID)
+        let ban = document.getElementById("ban-"+UUID).checked;
+        if(ban){ban = "1";}else{ban = "0";}
+        var data = {
+            "ban": ban
+        }
+        $.ajax({
+            url: "/api/user/"+UUID+"?sid={{PASS_DATA['SID']}}",
+            type: "POST",
+            data: JSON.stringify(data),
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            success: function (data) {
+                    location.reload();
+            },
+            error: function (err) {
+                alert(err.responseText);
+            }
+        });
+    }
+
+    updateTable()
+</script>
+
+{%endblock%}

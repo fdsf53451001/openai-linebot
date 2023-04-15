@@ -1,7 +1,7 @@
 import threading
 import time
 import logging
-import asyncio
+logging.basicConfig(level=logging.INFO)
 import re
 
 from Argument import Argument
@@ -23,13 +23,19 @@ class MessageHandler:
 
     def handdle(self, platform_name, user_id, receive_text, receive_timestamp):
         logging.info('receive from [%s] %s %s',platform_name,user_id,receive_text)
-        receive_sentence_id = self.db.save_chat(user_id, receive_timestamp, 1, receive_text)
+        self.db.save_chat(user_id, receive_timestamp, 1, receive_text)
+
+        if not self.check_user(user_id, platform_name):
+            return 'You are banned by admin!'
 
         reply_msg = None
         (reply_mode,reply_rule) = (0,None)  
-        # 0=none, 1=default_reply, 2=keyword, 3=story, 4=chatgpt
+        # 0=none, 1=default_reply, 2=keyword, 3=story, 4=chatgpt, 5=command
 
-        if self.argument.read_conf('function','default_reply') == 'true':
+        reply_msg = self.check_restart_command(user_id, receive_text)
+        if reply_msg : reply_mode = 5
+
+        if self.argument.read_conf('function','default_reply') == 'true' and reply_msg == None:
             reply_msg = self.argument.read_conf('function','default_reply_word')
             if reply_msg : reply_mode = 1
 
@@ -54,18 +60,21 @@ class MessageHandler:
             reply_msg = "所有對話引擎不可用，請檢查設定!"
             reply_mode = 0
 
-        logging.info('reply to [%s] %s %s',platform_name,user_id,reply_msg)
+        logging.debug('reply to [%s] %s %s',platform_name,user_id,reply_msg)
         chatgpt_sentence_id = self.db.save_chat(user_id, int(time.time()*1000), 0, reply_msg)  
         self.db.save_reply(chatgpt_sentence_id, reply_mode, reply_rule)
         return reply_msg
-    
-    def send_to_user(self, platform_name, user_id, msg):
-        # this function for alarm purpose only
-        # won't save to database
-        logging.info('send to [%s] %s %s',platform_name,user_id,msg)
 
-        if not platform_name=='command_line':
-            self.platforms[platform_name].send_to_user(user_id, msg)
+    def check_restart_command(self, user_id, receive_text):
+        if self.check_input_rule('[Regex] (重新開始|重啟|[rR]estart)',receive_text):
+            logging.info('user reset session : %s',user_id)
+            t = str(time.time()*1000)
+            for i in range(5//2):
+                self.db.save_chat(user_id, t, 1, '')
+                sid = self.db.save_chat(user_id, t, 0, '')
+                self.db.save_reply(sid, 5, None)
+            return 'OK'
+        return None
 
     def keyword_hold(self,receive_text):
         # return self.db.search_keyword(receive_text)
@@ -75,7 +84,6 @@ class MessageHandler:
             if self.check_input_rule(keyword_row[2], receive_text):
                 return (keyword_row[3],keyword_row[0])
         return None
-
     
     def story_hold(self, platform_name, user_id, receive_text):
         # node type : 0=entry, 1=fork, 2=condiction, 3=response 
@@ -157,3 +165,38 @@ class MessageHandler:
             if rule in receive_text:
                 return True
         return False
+
+    def send_to_user(self, platform_name, user_id, msg):
+        # this function for alarm purpose only
+        # won't save to database
+        logging.debug('send to [%s] %s %s',platform_name,user_id,msg)
+
+        if not platform_name=='command_line':
+            self.platforms[platform_name].send_to_user(user_id, msg)
+
+    def check_user(self, user_id, platform_name):
+        user_profile = self.db.check_user(user_id)
+        if not user_profile: # user not exist
+            threading.Thread(target=self.add_user, args=(user_id, platform_name)).start()
+        elif user_profile[0][2]==1: # user is banned
+            logging.warning('banned user detect : %s',user_id)
+            return False    
+        elif user_profile[0][1]==None: # user have no profile
+            threading.Thread(target=self.update_user, args=(user_id, platform_name)).start()
+        return True
+
+    def add_user(self, user_id, platform_name):
+        profile = self.platforms[platform_name].get_user_profile(user_id)
+        if profile:
+            t = str(time.time()*1000)
+            self.db.add_new_user(user_id, platform_name, profile[0], profile[1], t)
+        else:
+            self.db.add_new_user_no_profile(user_id, platform_name)
+        logging.info('new user detect : %s',user_id)
+
+    def update_user(self, user_id, platform_name):
+        logging.warn('user with no profile detect : %s',user_id)
+        profile = self.platforms[platform_name].get_user_profile(user_id)
+        if profile:
+            t = str(time.time()*1000)
+            self.db.update_user_profile(user_id, profile[0], profile[1], t)

@@ -9,10 +9,8 @@ import time
 import json
 from datetime import datetime
 import logging
-import threading
-
 logging.basicConfig(level=logging.INFO)
-
+import threading
 sys.path.append('data/')
 sys.path.append('api/')
 from Argument import Argument
@@ -24,6 +22,7 @@ from APIHandler import APIHandler
 from Keyword import Keywords, Keyword
 from Setting import ChatSetting
 from Story import Story_name, Story_sentence
+from User import User
 
 argument = Argument()
 
@@ -94,6 +93,20 @@ def keyword_page():
                  'KEYWORD_DATA':json.dumps(db.load_keyword())
                 }
     return render_template('keyword.html',PASS_DATA=PASS_DATA)
+
+@app.route('/user_list')
+def user_list():
+    user_config = apiHandler.check_request_username(request)
+    if not user_config:
+        return redirect(url_for('login'))
+    else:
+        (sid,username) = user_config
+    
+    PASS_DATA = {'USER_NAME':username,
+                 'SID':sid,
+                 'USERS_DATA':json.dumps(db.load_all_user())
+                }
+    return render_template('user_list.html',PASS_DATA=PASS_DATA)
 
 @app.route('/reply_setting')
 def reply_setting():
@@ -170,10 +183,11 @@ api.add_resource(Keyword, '/api/keyword/<string:keyword_id>',resource_class_kwar
 api.add_resource(ChatSetting, '/api/setting/chat/<string:key>',resource_class_kwargs={'apiHandler':apiHandler})
 api.add_resource(Story_name, '/api/story_name',resource_class_kwargs={'db':db,'apiHandler':apiHandler})
 api.add_resource(Story_sentence, '/api/story_sentence/<string:story_id>',resource_class_kwargs={'db':db,'apiHandler':apiHandler})
+api.add_resource(User, '/api/user/<string:UUID>',resource_class_kwargs={'db':db,'apiHandler':apiHandler})
 
 if __name__ == "__main__":
     # run_with_ngrok(app)
-    app.run(host='0.0.0.0',port=8000,debug=True)
+    app.run(host='0.0.0.0',port=8000,debug=False)
     # app.run(host='0.0.0.0',port=443,ssl_context=('cert/cert.pem', 'cert/privkey.pem'))
 
     # talk_test()

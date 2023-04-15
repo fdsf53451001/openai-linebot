@@ -53,3 +53,7 @@ class DiscordClient(discord.Client):
         # await channel.send(message)
         # asyncio.get_event_loop().call_soon_threadsafe(channel.send(message))
     
+    def get_user_profile(self, user_id):
+        profile = self.get_user(int(user_id))
+        if not profile: return None
+        return (profile.name, profile.avatar.url)

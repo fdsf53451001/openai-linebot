@@ -21,6 +21,8 @@ class database:
             self.db_lock.release()
             return result
 
+    ### Chat Operation
+
     def save_chat(self, userId, time ,direction, text): # 0:AI ; 1:Human
         # print(userId, time , direction, text)
         self.deal_sql_request('INSERT INTO Message (userId,time,direction,text) VALUES '+str((userId, time, direction, text)))
@@ -43,10 +45,6 @@ class database:
         time_limit = int((time.time()-time_offset)*1000)
         result = self.deal_sql_request('SELECT direction,text FROM (SELECT time,direction,text FROM Message WHERE userId="'+userId+'" AND time>='+str(time_limit)+' ORDER BY time  DESC LIMIT '+str(count)+') AS A ORDER BY time')
         return result
-
-    def load_user_amount(self):
-        result = self.deal_sql_request('SELECT COUNT(DISTINCT userId) FROM Message')
-        return result[0][0]
 
     def load_chat_amount(self):
         result = self.deal_sql_request('SELECT COUNT(*) FROM Message')
@@ -71,6 +69,8 @@ class database:
         else:
             return None
 
+    ### System Logs
+
     def load_system_logs(self):
         # logs = [{'time':'2020-01-01','status':'success' ,'text':'test'}]
         logs = []
@@ -82,6 +82,8 @@ class database:
         #     logs = logs + [{'time':'','status':'null' ,'text':''}]*(10-len(logs))
         return logs
     
+    ### Keyword Operation
+
     def search_keyword(self, str):
         result = self.deal_sql_request('SELECT enable,reply,id FROM Keyword WHERE instr("'+str+'",keyword)>0 ORDER BY length(keyword) DESC')
         for r in result:
@@ -101,6 +103,8 @@ class database:
         result = self.deal_sql_request('DELETE FROM Keyword WHERE Id='+str(keyword_id))
         return result
     
+    ### Story Operation
+
     def load_all_story(self):
         result = self.deal_sql_request('SELECT Story.story_id, enable, sentence_id, output_or_condiction FROM Story,Story_sentence WHERE Story.story_id==Story_sentence.story_id AND Story_sentence.type==0')
         return result
@@ -144,7 +148,37 @@ class database:
         result = self.deal_sql_request('DELETE FROM Story_sentence WHERE story_id=='+str(story_id))
         return result
 
+    ### User Operation
+
+    def load_user_amount(self):
+        result = self.deal_sql_request('SELECT COUNT(DISTINCT userId) FROM Message')
+        return result[0][0]
+
+    def load_all_user(self):
+        result = self.deal_sql_request('SELECT  UUID, platform, ban, name, photo, last_update_time, tmp,count(messageId)  FROM User, Message WHERE User.UUID==Message.userId GROUP BY UUID')
+        return result
+
+    def check_user(self, user_id):
+        result = self.deal_sql_request('SELECT UUID,last_update_time,ban FROM User WHERE UUID=="'+user_id+'"')
+        return result
+
+    def add_new_user(self, user_id, platform, name, photo, last_update_time):
+        result = self.deal_sql_request('INSERT INTO User (UUID, platform, name, photo, last_update_time) VALUES ("'+user_id+'","'+platform+'","'+name+'","'+photo+'","'+last_update_time+'")')
+        return result
+
+    def add_new_user_no_profile(self, user_id, platform):
+        result = self.deal_sql_request('INSERT INTO User (UUID, platform) VALUES ("'+user_id+'","'+platform+'")')
+        return result
+    
+    def update_user_profile(self, user_id, name, photo, last_update_time):
+        result = self.deal_sql_request('UPDATE User SET name="'+name+'", photo="'+photo+'", last_update_time="'+last_update_time+'" WHERE UUID=="'+user_id+'"')
+        return result
+
+    def ban_user(self, user_id, ban):
+        result = self.deal_sql_request('UPDATE User SET ban='+ban+' WHERE UUID=="'+user_id+'"')
+        return result
+
 if __name__ == '__main__':
     db = database(threading.Lock())
-    data = db.add_story_sentence(2,0,3,'faq')
+    data = db.add_new_user('456','line','NULL','NULL','NULL','NULL')
     print(data)

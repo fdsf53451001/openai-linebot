@@ -24,13 +24,13 @@ class ChatGPT:
             message_list.append({'role':role,'content':row[1]})
 
         try:
-            logging.info('send to openai %s',message_list[-1])
+            logging.debug('send to openai %s',message_list[-1])
             response = openai.ChatCompletion.create(
                 model="gpt-3.5-turbo",
                 messages=message_list
                 )
 
-            logging.info('receive from openai %s',response['choices'][0]['message']['content'])
+            logging.debug('receive from openai %s',response['choices'][0]['message']['content'])
             #print(response)
             return response['choices'][0]['message']['content']
         

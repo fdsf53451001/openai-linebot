@@ -1,5 +1,5 @@
 from linebot import LineBotApi, WebhookHandler
-from linebot.exceptions import InvalidSignatureError
+from linebot.exceptions import InvalidSignatureError, LineBotApiError
 from linebot.models import MessageEvent, TextMessage, TextSendMessage
 import logging
 
@@ -43,6 +43,15 @@ class line_platform():
                 TextSendMessage(text=reply_msg))
 
     def send_to_user(self, user_id, message):
-        logging.info('send to %s %s',user_id,message)
+        # logging.info('send to %s %s',user_id,message)
         if user_id=='testing': return
         self.line_bot_api.push_message(user_id, TextSendMessage(text=message))
+
+    def get_user_profile(self, user_id):
+        try:
+            profile = self.line_bot_api.get_profile(user_id)
+            return (profile.display_name, profile.picture_url)
+        except LineBotApiError as e:
+            logging.error('get_user_profile error %s',e)
+            return None
+        

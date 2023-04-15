@@ -36,5 +36,5 @@ class APIHandler:
         sid = args.get('sid', None)
         user_info = self.check_sid_valid(sid)
         if user_info:
-            return (sid, user_info[0])
+            return (sid, user_info)
         return None
