@@ -41,7 +41,7 @@ class DiscordClient(discord.Client):
         # print(receive_timestamp)
         # logging.info('receive from %s %s',user_id,receive_text)
 
-        reply_msg = self.messageHandler.handdle('discord',user_id, receive_text, receive_timestamp)
+        (reply_msg,reply_quick_reply) = self.messageHandler.handdle('discord',user_id, receive_text, receive_timestamp)
 
         # logging.info('reply to %s %s',user_id,reply_msg)
         await message.channel.send(reply_msg)

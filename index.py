@@ -77,7 +77,7 @@ def talk_test():
         user_id = 'command_line'
         receive_text = input('text:')
         receive_timestamp = int(time.time()*1000)
-        reply_msg = messageHandler.handdle('command_line',user_id, receive_text, receive_timestamp)
+        (reply_msg,reply_quick_reply) = messageHandler.handdle('command_line',user_id, receive_text, receive_timestamp)
         print('reply:',reply_msg)
 
 @app.route('/keyword')
@@ -93,6 +93,34 @@ def keyword_page():
                  'KEYWORD_DATA':json.dumps(db.load_keyword())
                 }
     return render_template('keyword.html',PASS_DATA=PASS_DATA)
+
+@app.route('/message')
+def message_page():
+    user_config = apiHandler.check_request_username(request)
+    if not user_config:
+        return redirect(url_for('login'))
+    else:
+        (sid,username) = user_config
+    
+    PASS_DATA = {'USER_NAME':username,
+                 'SID':sid,
+                 'MESSAGE_DATA':json.dumps(db.load_chat_deteil())
+                }
+    return render_template('message.html',PASS_DATA=PASS_DATA)
+
+@app.route('/qna')
+def qna():
+    user_config = apiHandler.check_request_username(request)
+    if not user_config:
+        return redirect(url_for('login'))
+    else:
+        (sid,username) = user_config
+    
+    PASS_DATA = {'USER_NAME':username,
+                 'SID':sid,
+                }
+    return render_template('qna.html',PASS_DATA=PASS_DATA)
+
 
 @app.route('/user_list')
 def user_list():

@@ -41,6 +41,10 @@ class database:
         result = self.deal_sql_request('SELECT direction,text FROM (SELECT time,direction,text FROM Message WHERE userId="'+userId+'" ORDER BY time  DESC LIMIT '+str(count)+') AS A ORDER BY time')
         return result
 
+    def load_chat_deteil(self, count=100):
+        result = self.deal_sql_request('SELECT time,userId,name,direction,text FROM Message,User WHERE Message.userId==User.UUID ORDER BY messageId DESC LIMIT 100')
+        return result
+
     def load_chat_limited(self, userId, count=5, time_offset=180):
         time_limit = int((time.time()-time_offset)*1000)
         result = self.deal_sql_request('SELECT direction,text FROM (SELECT time,direction,text FROM Message WHERE userId="'+userId+'" AND time>='+str(time_limit)+' ORDER BY time  DESC LIMIT '+str(count)+') AS A ORDER BY time')
@@ -180,5 +184,5 @@ class database:
 
 if __name__ == '__main__':
     db = database(threading.Lock())
-    data = db.add_new_user('456','line','NULL','NULL','NULL','NULL')
+    data = db.load_chat_deteil()
     print(data)

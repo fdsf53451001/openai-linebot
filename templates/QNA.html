@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{%block PAGE_NAME%}ChatGPT - Q&A{%endblock%}
+
+{%block PAGEUP_SCRIPT%}
+<!-- Custom styles for this page -->
+<link href="{{url_for('static',filename='vendor/datatables/dataTables.bootstrap4.min.css')}}" rel="stylesheet">
+{%endblock%}
+
+{%block PAGE%}
+<!-- Page Heading -->
+<h1 class="h3 mb-2 text-gray-800">Q&A</h1>
+<!-- <p class="mb-4">關鍵字模式支持正規表達式，請輸入"[Regex] 表達式內容"。支持自定義程式執行，請輸出"[ExtCode] 程式"。</p>
+<p class="mb-4">請參考<a href="https://transbiz.com.tw/regex-regular-expression-ga-%E6%AD%A3%E8%A6%8F%E8%A1%A8%E7%A4%BA%E5%BC%8F" target="_blank">Regex規則</a>。為了系統穩定，請使用<a href="https://www.regextester.com" target="_blank">外部網站測試Regex</a>，再填入本系統。</p> -->
+<hr>
+<!-- DataTales Example -->
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">關鍵字模式</h6>
+    </div>
+    <div class="card-body">
+        <h6>關鍵字模式會比對使用者輸入的語句，是否「包含」關鍵字。</h6>
+    </div>
+</div>
+
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">劇本模式</h6>
+    </div>
+    <div class="card-body">
+        <h6>劇本模式用於連續的對話，設定分支與選項，讓使用者依照指示完成功能。</h6>
+        <h6>請注意，如果對話內容超出選項範圍，系統會交由OpenAI回應！</h6>
+        <iframe width="560" height="315" src="https://www.youtube.com/embed/bwv1GJ20PkY" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+    </div>
+</div>
+{%endblock%}
+
+{%block PAGEDOWN_SCRIPT%}
+
+<!-- Bootstrap core JavaScript-->
+<script src="{{url_for('static',filename='vendor/jquery/jquery.min.js')}}"></script>
+<script src="{{url_for('static',filename='vendor/bootstrap/js/bootstrap.bundle.min.js')}}"></script>
+
+<!-- Core plugin JavaScript-->
+<script src="{{url_for('static',filename='vendor/jquery-easing/jquery.easing.min.js')}}"></script>
+
+{%endblock%}

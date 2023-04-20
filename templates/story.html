@@ -200,7 +200,7 @@
                                 </td>\
                                 <td><input type="text" id="input-outputorcondiction'+i+'" class="form-control form-control-sm" aria-describedby="inputGroup-sizing-sm" onchange="on_sentence_output_change('+i+')" value="'+outputorcondiction+'"></td>\
                                 <td>\
-                                    <button type="button" id="input-send" class="btn btn-outline-danger btn-sm" onclick="on_sentence_add('+i+')">+</button> \
+                                    <button type="button" id="input-send" class="btn btn-outline-danger btn-sm" onclick="on_sentence_add('+i+','+sentence_id+')">+</button> \
                                 </td>\
                             </tr>\
                             '
@@ -231,7 +231,7 @@
                                 </td>\
                                 <td><input type="text" id="input-outputorcondiction'+i+'" class="form-control form-control-sm" aria-describedby="inputGroup-sizing-sm" onchange="on_sentence_output_change('+i+')" value="'+outputorcondiction+'"></td>\
                                 <td>\
-                                    <button type="button" id="input-send" class="btn btn-outline-danger btn-sm" onclick="on_sentence_add('+i+')">+</button>\
+                                    <button type="button" id="input-send" class="btn btn-outline-danger btn-sm" onclick="on_sentence_add('+i+','+sentence_id+')">+</button>\
                                     <button type="button" id="input-send" class="btn btn-outline-primary btn-sm" onclick="on_sentence_delete('+i+')">-</button>\
                                 </td>\
                             </tr>\
@@ -254,14 +254,20 @@
         story_content[id][2] = type
     }
 
-    function on_sentence_add(id){
-        let item = [id+1,0,3,"",""]
+    function on_sentence_add(id,display_id){
+        let item = [display_id+1,0,3,"",""]
         story_content.splice(id+1, 0, item);
+        for(let i=id+2;i<story_content.length;i++){
+            story_content[i][0] += 1
+        }
         show_story_content()
     }
 
     function on_sentence_delete(id){
         story_content.splice(id, 1);
+        for(let i=id;i<story_content.length;i++){
+            story_content[i][0] -= 1
+        }
         show_story_content()
     }
 

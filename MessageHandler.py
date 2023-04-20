@@ -4,6 +4,10 @@ import logging
 logging.basicConfig(level=logging.INFO)
 import re
 
+from linebot.models import QuickReply
+from linebot.models import QuickReplyButton
+from linebot.models import MessageAction
+
 from Argument import Argument
 from ExternalCodeRunner import ExternalCodeRunner
 
@@ -29,6 +33,7 @@ class MessageHandler:
             return 'You are banned by admin!'
 
         reply_msg = None
+        reply_quick_reply = None
         (reply_mode,reply_rule) = (0,None)  
         # 0=none, 1=default_reply, 2=keyword, 3=story, 4=chatgpt, 5=command
 
@@ -48,7 +53,10 @@ class MessageHandler:
             
         if self.argument.read_conf('function','story_reply') == 'true' and reply_msg == None:
             (reply_rule, reply_msg) = self.story_hold(platform_name,user_id,receive_text)
-            if reply_msg : reply_mode = 3
+            if reply_msg : 
+                reply_mode = 3
+                if platform_name=='line': # only line platform support quick reply
+                    reply_quick_reply = self.story_generate_quick_reply(reply_rule)
 
         reply_msg = self.extrunner.check_format(reply_msg, platform_name, user_id, self.send_to_user)
 
@@ -63,7 +71,7 @@ class MessageHandler:
         logging.debug('reply to [%s] %s %s',platform_name,user_id,reply_msg)
         chatgpt_sentence_id = self.db.save_chat(user_id, int(time.time()*1000), 0, reply_msg)  
         self.db.save_reply(chatgpt_sentence_id, reply_mode, reply_rule)
-        return reply_msg
+        return (reply_msg, reply_quick_reply)
 
     def check_restart_command(self, user_id, receive_text):
         if self.check_input_rule('[Regex] (重新開始|重啟|[rR]estart)',receive_text):
@@ -122,6 +130,16 @@ class MessageHandler:
         # failed to match
         self.send_to_user(platform_name, user_id, "無法繼續對話，將由OpenAI回覆")
         return (None,None)
+
+    def story_generate_quick_reply(self, reply_rule):
+        next_sentences = self.db.load_next_sentence(reply_rule)
+        quick_reply = []
+        for sentene in next_sentences:
+            sentence_content = self.db.load_sentence(sentene[0])
+            message = sentence_content[2]
+            if message and (not message.startswith('[Regex] ')): # pass regex
+                quick_reply.append(QuickReplyButton(action=MessageAction(label=message, text=message)))
+        return QuickReply(items=quick_reply) if quick_reply else None
 
     def chatgpt_hold(self, platform_name, user_id):
         result = []
