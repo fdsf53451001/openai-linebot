@@ -63,6 +63,7 @@ def index():
                  'SID':sid,
                  'USER_AMOUNT':db.load_user_amount(),
                  'CHAT_AMOUNT':db.load_chat_amount(),
+                 'OPENAI_USAGE_AMOUNT':db.load_openai_usage(),
                  'USAGE_GRAPH_DATA':json.dumps(db.load_chat_amount_each_month()),
                  'SYSTEM_LOGS':db.load_system_logs()
                 }
@@ -119,7 +120,7 @@ def qna():
     PASS_DATA = {'USER_NAME':username,
                  'SID':sid,
                 }
-    return render_template('qna.html',PASS_DATA=PASS_DATA)
+    return render_template('QNA.html',PASS_DATA=PASS_DATA)
 
 
 @app.route('/user_list')
@@ -153,6 +154,25 @@ def reply_setting():
                  'CHATGPT_REPLY': "checked" if argument.read_conf('function','chatgpt_reply')=='true' else ""
                 }
     return render_template('reply_setting.html',PASS_DATA=PASS_DATA)
+
+@app.route('/api_setting')
+def api_setting():
+    user_config = apiHandler.check_request_username(request)
+    if not user_config:
+        return redirect(url_for('login'))
+    else:
+        (sid,username) = user_config
+
+    PASS_DATA = {'USER_NAME':username,
+                 'SID':sid,
+                 'DEFAULT_REPLY': "checked" if argument.read_conf('function','default_reply')=='true' else "",
+                 'DEFAULT_REPLY_WORD': argument.read_conf('function','default_reply_word'),
+                 'KEYWORD_REPLY': "checked" if argument.read_conf('function','keyword_reply')=='true' else "",
+                 'STORY_REPLY': "checked" if argument.read_conf('function','story_reply')=='true' else "",
+                 'CHATGPT_REPLY': "checked" if argument.read_conf('function','chatgpt_reply')=='true' else ""
+                }
+    return render_template('api_setting.html',PASS_DATA=PASS_DATA)
+
 
 @app.route('/story')
 def story():

@@ -45,7 +45,7 @@ class MessageHandler:
             if reply_msg : reply_mode = 1
 
         if self.argument.read_conf('function','keyword_reply') == 'true' and reply_msg == None:
-            reply_msg = self.keyword_hold(receive_text)
+            reply_msg = self.keyword_hold(user_id, receive_text)
             if reply_msg : 
                 reply_rule = reply_msg[1]
                 reply_msg = reply_msg[0]
@@ -60,6 +60,8 @@ class MessageHandler:
 
         reply_msg = self.extrunner.check_format(reply_msg, platform_name, user_id, self.send_to_user)
 
+        reply_msg = self.check_user_variable(user_id, reply_msg)
+
         if self.argument.read_conf('function','chatgpt_reply') == 'true'  and reply_msg == None:
             reply_msg = self.chatgpt_hold(platform_name,user_id)
             reply_mode = 4
@@ -73,8 +75,10 @@ class MessageHandler:
         self.db.save_reply(chatgpt_sentence_id, reply_mode, reply_rule)
         return (reply_msg, reply_quick_reply)
 
+    # ? special command
+
     def check_restart_command(self, user_id, receive_text):
-        if self.check_input_rule('[Regex] (重新開始|重啟|[rR]estart)',receive_text):
+        if self.check_input_rule(user_id, '[Regex] (重新開始|重啟|[rR]estart)',receive_text):
             logging.info('user reset session : %s',user_id)
             t = str(time.time()*1000)
             for i in range(5//2):
@@ -83,13 +87,41 @@ class MessageHandler:
                 self.db.save_reply(sid, 5, None)
             return 'OK'
         return None
+    
+    def check_user_variable(self, user_id, msg):
+        if '[LoadUserData-' in msg:
+            s_index = msg.index('[LoadUserData-')
+            e_index = msg.index(']',s_index)
+            user_data_name = msg[s_index+14:e_index]
 
-    def keyword_hold(self,receive_text):
+            user_value = self.db.load_user_extra_data(user_id,user_data_name)
+            if user_value:
+                return msg.replace(msg[s_index:e_index+1],user_value)
+            else:
+                return msg.replace(msg[s_index:e_index+1],'None')
+        return msg
+
+    def check_input_rule(self, user_id, rule, receive_text):
+        if rule.startswith('[Regex] '): # match regex
+            regex = re.compile(rule[8:])
+            match = regex.search(receive_text)
+            return match
+        elif rule.startswith('[SaveUserData] '): # match save data
+            self.db.add_user_extra_data(user_id, rule[15:], receive_text)
+            return True
+        else:   # match word
+            if rule in receive_text:
+                return True
+        return False
+
+    # ? reply engine
+
+    def keyword_hold(self, user_id, receive_text):
         # return self.db.search_keyword(receive_text)
         keywords = self.db.load_keyword()
         for keyword_row in keywords:
             if not keyword_row[1]: continue
-            if self.check_input_rule(keyword_row[2], receive_text):
+            if self.check_input_rule(user_id, keyword_row[2], receive_text):
                 return (keyword_row[3],keyword_row[0])
         return None
     
@@ -109,7 +141,7 @@ class MessageHandler:
         story_content = self.db.load_all_story()
         for story in story_content:
             if story[1] == 1: # enable
-                if self.check_input_rule(story[3], receive_text):
+                if self.check_input_rule(user_id, story[3], receive_text):
                     return self.story_hold_continue(platform_name, user_id, story[2], receive_text)
         # failed to match
         return (None,None)
@@ -125,7 +157,7 @@ class MessageHandler:
             if sentence[1]==1 or sentence[1]==3:
                 return (sentence[0],sentence[2])
             elif sentence[1]==2:
-                if self.check_input_rule(sentence[2], receive_text):
+                if self.check_input_rule(user_id, sentence[2], receive_text):
                     return self.story_hold_continue(platform_name,user_id, sentence[0], receive_text)
         # failed to match
         self.send_to_user(platform_name, user_id, "無法繼續對話，將由OpenAI回覆")
@@ -174,15 +206,7 @@ class MessageHandler:
         reply_msg = self.chatgpt.get_response(user_id)
         result.append(reply_msg)
 
-    def check_input_rule(self, rule, receive_text):
-        if rule.startswith('[Regex] '):
-            regex = re.compile(rule[8:])
-            match = regex.search(receive_text)
-            return match
-        else:
-            if rule in receive_text:
-                return True
-        return False
+    # ? other utility
 
     def send_to_user(self, platform_name, user_id, msg):
         # this function for alarm purpose only

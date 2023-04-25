@@ -1,6 +1,7 @@
 import sqlite3
 import time
 import threading
+import json
 
 class database:
     def __init__(self, db_lock):
@@ -152,6 +153,11 @@ class database:
         result = self.deal_sql_request('DELETE FROM Story_sentence WHERE story_id=='+str(story_id))
         return result
 
+    ### openAI
+    def load_openai_usage(self):
+        result = self.deal_sql_request('SELECT COUNT(1) FROM Message_reply WHERE reply_mode==4')
+        return result[0][0]
+
     ### User Operation
 
     def load_user_amount(self):
@@ -182,7 +188,26 @@ class database:
         result = self.deal_sql_request('UPDATE User SET ban='+ban+' WHERE UUID=="'+user_id+'"')
         return result
 
+    def load_all_user_extra_data(self, user_id):
+        result = self.deal_sql_request('SELECT tmp FROM User WHERE UUID=="'+user_id+'"')
+        if not result:
+            return None
+        result = json.loads(result[0][0])
+        return result
+    
+    def load_user_extra_data(self, user_id, d_name):
+        d = self.load_all_user_extra_data(user_id)
+        if d and d_name in d:
+            return d[d_name]
+        return None
+
+    def add_user_extra_data(self, user_id, d_name, d_value):
+        d = self.load_all_user_extra_data(user_id)
+        d[d_name] = d_value
+        result = self.deal_sql_request('UPDATE User SET tmp=\''+json.dumps(d)+'\' WHERE UUID=="'+user_id+'"')
+        return result
+
 if __name__ == '__main__':
     db = database(threading.Lock())
-    data = db.load_chat_deteil()
+    data = db.load_user_extra_data()
     print(data)
