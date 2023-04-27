@@ -137,6 +137,20 @@ def user_list():
                 }
     return render_template('user_list.html',PASS_DATA=PASS_DATA)
 
+@app.route('/talk_analyze')
+def talk_analyze():
+    user_config = apiHandler.check_request_username(request)
+    if not user_config:
+        return redirect(url_for('login'))
+    else:
+        (sid,username) = user_config
+    
+    PASS_DATA = {'USER_NAME':username,
+                 'SID':sid
+                }
+    return render_template('talk_analyze.html',PASS_DATA=PASS_DATA)
+
+
 @app.route('/reply_setting')
 def reply_setting():
     user_config = apiHandler.check_request_username(request)
