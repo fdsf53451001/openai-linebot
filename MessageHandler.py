@@ -89,7 +89,7 @@ class MessageHandler:
         return None
     
     def check_user_variable(self, user_id, msg):
-        if '[LoadUserData-' in msg:
+        if msg and '[LoadUserData-' in msg:
             s_index = msg.index('[LoadUserData-')
             e_index = msg.index(']',s_index)
             user_data_name = msg[s_index+14:e_index]

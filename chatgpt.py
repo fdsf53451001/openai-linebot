@@ -1,11 +1,15 @@
 import os
 import openai
 import logging
+from opencc import OpenCC
+
+# pip install opencc-python-reimplemented
 
 class ChatGPT:
     def __init__(self,db,openai_key):
         self.db = db
         self.model = os.getenv("OPENAI_MODEL", default = "text-davinci-003")
+        self.cc = OpenCC('s2t')
         #self.model = os.getenv("OPENAI_MODEL", default = "chatbot")
         self.temperature = float(os.getenv("OPENAI_TEMPERATURE", default = 0))
         self.frequency_penalty = float(os.getenv("OPENAI_FREQUENCY_PENALTY", default = 0))
@@ -16,6 +20,7 @@ class ChatGPT:
     def get_response(self, userId):
         message_list = []
         data = self.db.load_chat(userId)
+        # message_list.append({'role':'user','content':'以下請用繁體中文和英文回答'})
         for row in data:
             if row[0]==0:
                 role = 'assistant'
@@ -30,9 +35,12 @@ class ChatGPT:
                 messages=message_list
                 )
 
-            logging.debug('receive from openai %s',response['choices'][0]['message']['content'])
-            #print(response)
-            return response['choices'][0]['message']['content']
+            if response:
+                response_msg = self.cc.convert(response['choices'][0]['message']['content'])
+                logging.debug('receive from openai %s',response_msg)
+                return response_msg
+            else:
+                return None
         
         except openai.error.RateLimitError:
             return None
