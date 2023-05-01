@@ -115,7 +115,7 @@
                 {% for log in PASS_DATA['SYSTEM_LOGS'] %}
                     <div class="row" style="margin-bottom: 5%;">
                         <!-- <img src="{{url_for('static',filename='img/'+log['status']+'.png')}}" style="height: 30px;width: 30px;left: 3%;position: relative;"> -->
-                        <h6 style="position: relative;margin: auto 20px;">{{log['time']}} {{log['text']}}</h6>
+                        <h6 style="position: relative;">{{log['time']}} {{log['text']}}</h6>
                     </div> 
                 {% endfor %}
 

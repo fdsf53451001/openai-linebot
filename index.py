@@ -9,7 +9,10 @@ import time
 import json
 from datetime import datetime
 import logging
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(filename='data/system.log',
+                    filemode='w',
+                    format='* %(asctime)s %(levelname)s %(message)s',
+                    level=logging.WARN)
 import threading
 sys.path.append('data/')
 sys.path.append('api/')
@@ -57,6 +60,8 @@ def index():
         return redirect(url_for('login'))
     else:
         (sid,username) = user_config
+
+    fix_logger_level()
 
     # login pass
     PASS_DATA = {'USER_NAME':username,
@@ -239,6 +244,12 @@ def page_not_found(error):
                  'KEYWORD_DATA':json.dumps(db.load_keyword())
                 }
     return render_template('404.html',PASS_DATA=PASS_DATA)  # 錯誤回傳
+
+def fix_logger_level():
+    # set global logger level
+    loggers = [logging.getLogger(name) for name in logging.root.manager.loggerDict]
+    for logger in loggers:
+        logger.setLevel(logging.WARNING)
 
 api.add_resource(Keywords, '/api/keywords',resource_class_kwargs={'db':db,'apiHandler':apiHandler})
 api.add_resource(Keyword, '/api/keyword/<string:keyword_id>',resource_class_kwargs={'db':db,'apiHandler':apiHandler})

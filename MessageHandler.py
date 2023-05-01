@@ -1,8 +1,7 @@
 import threading
 import time
-import logging
-logging.basicConfig(level=logging.INFO)
 import re
+import logging
 
 from linebot.models import QuickReply
 from linebot.models import QuickReplyButton
@@ -30,7 +29,7 @@ class MessageHandler:
         self.db.save_chat(user_id, receive_timestamp, 1, receive_text)
 
         if not self.check_user(user_id, platform_name):
-            return 'You are banned by admin!'
+            return ('You are banned by admin!', None)
 
         reply_msg = None
         reply_quick_reply = None
@@ -169,7 +168,7 @@ class MessageHandler:
         for sentene in next_sentences:
             sentence_content = self.db.load_sentence(sentene[0])
             message = sentence_content[2]
-            if message and (not message.startswith('[Regex] ')): # pass regex
+            if message and (not message.startswith('[Regex] ')) and (not message.startswith('[SaveUserData] ')): # pass regex
                 quick_reply.append(QuickReplyButton(action=MessageAction(label=message, text=message)))
         return QuickReply(items=quick_reply) if quick_reply else None
 
