@@ -68,6 +68,7 @@ class MessageHandler:
         if reply_msg == None:
             reply_msg = "所有對話引擎不可用，請檢查設定!"
             reply_mode = 0
+            logging.warning('all reply engine are disabled!')
 
         logging.debug('reply to [%s] %s %s',platform_name,user_id,reply_msg)
         chatgpt_sentence_id = self.db.save_chat(user_id, int(time.time()*1000), 0, reply_msg)  
@@ -88,30 +89,34 @@ class MessageHandler:
         return None
     
     def check_user_variable(self, user_id, msg):
-        if msg and '[LoadUserData-' in msg:
-            s_index = msg.index('[LoadUserData-')
-            e_index = msg.index(']',s_index)
-            user_data_name = msg[s_index+14:e_index]
-
-            user_value = self.db.load_user_extra_data(user_id,user_data_name)
+        command_content = self.fetch_command_content(msg,'LoadUserData')
+        if command_content:
+            user_value = self.db.load_user_extra_data(user_id,command_content[2])
             if user_value:
-                return msg.replace(msg[s_index:e_index+1],user_value)
+                return msg.replace(msg[command_content[0]:command_content[1]+1],user_value)
             else:
-                return msg.replace(msg[s_index:e_index+1],'None')
+                return msg.replace(msg[command_content[0]:command_content[1]+1],'None')
         return msg
 
     def check_input_rule(self, user_id, rule, receive_text):
-        if rule.startswith('[Regex] '): # match regex
-            regex = re.compile(rule[8:])
+        match = False
+        
+        command_content = self.fetch_command_content(rule,'Regex')
+        if command_content: # match regex
+            regex = re.compile(command_content[2])
             match = regex.search(receive_text)
+            if not match : return False
+        
+        command_content = self.fetch_command_content(rule,'SaveUserData')
+        if command_content: # match save data
+            self.db.add_user_extra_data(user_id, command_content[2], receive_text)
+            match = True
+
+        if rule in receive_text: # match word
+            match = True
             return match
-        elif rule.startswith('[SaveUserData] '): # match save data
-            self.db.add_user_extra_data(user_id, rule[15:], receive_text)
-            return True
-        else:   # match word
-            if rule in receive_text:
-                return True
-        return False
+        
+        return match
 
     # ? reply engine
 
@@ -206,6 +211,14 @@ class MessageHandler:
         result.append(reply_msg)
 
     # ? other utility
+
+    def fetch_command_content(self, text, command):
+        if text and '['+command+'-' in text:
+            s_index = text.index('['+command+'-')
+            e_index = text.index(']',s_index)
+            command_content = text[s_index+len(command)+2:e_index]
+            return (s_index, e_index, command_content)
+        return None
 
     def send_to_user(self, platform_name, user_id, msg):
         # this function for alarm purpose only

@@ -6,11 +6,11 @@ class ExternalCodeRunner():
     def check_format(self, command, platform_name, user_id, send_to_user):
         if not command:
             return None
-        if not command.startswith('[ExtCode] '):
+        command_content = self.fetch_command_content(command, 'ExtCode')
+        if not command_content:
             return command
-        command = command.split(' ')[1]
 
-        threading.Thread(target=self.run_command, args=(command, platform_name, user_id, send_to_user)).start()
+        threading.Thread(target=self.run_command, args=(command[2], platform_name, user_id, send_to_user)).start()
         return 'Code Running...'
 
     def run_command(self, command, platform_name, user_id, send_to_user):
@@ -28,3 +28,11 @@ class ExternalCodeRunner():
         except Exception as e:
             logging.error(e)
         return result
+    
+    def fetch_command_content(self, text, command):
+        if text and '['+command+'-' in text:
+            s_index = text.index('['+command+'-')
+            e_index = text.index(']',s_index)
+            command_content = text[s_index+len(command)+2:e_index]
+            return (s_index, e_index, command_content)
+        return None
