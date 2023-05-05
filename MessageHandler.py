@@ -78,7 +78,7 @@ class MessageHandler:
     # ? special command
 
     def check_restart_command(self, user_id, receive_text):
-        if self.check_input_rule(user_id, '[Regex] (重新開始|重啟|[rR]estart)',receive_text):
+        if self.check_input_rule(user_id, '[Regex-(重新開始|重啟|[rR]estart)] ',receive_text):
             logging.info('user reset session : %s',user_id)
             t = str(time.time()*1000)
             for i in range(5//2):
@@ -103,6 +103,7 @@ class MessageHandler:
         
         command_content = self.fetch_command_content(rule,'Regex')
         if command_content: # match regex
+            print(command_content[2])
             regex = re.compile(command_content[2])
             match = regex.search(receive_text)
             if not match : return False
@@ -173,7 +174,7 @@ class MessageHandler:
         for sentene in next_sentences:
             sentence_content = self.db.load_sentence(sentene[0])
             message = sentence_content[2]
-            if message and (not message.startswith('[Regex] ')) and (not message.startswith('[SaveUserData] ')): # pass regex
+            if message and (not self.fetch_command_content(message,'Regex')) and (not self.fetch_command_content(message,'SaveUserData')): # pass regex
                 quick_reply.append(QuickReplyButton(action=MessageAction(label=message, text=message)))
         return QuickReply(items=quick_reply) if quick_reply else None
 
@@ -214,10 +215,13 @@ class MessageHandler:
 
     def fetch_command_content(self, text, command):
         if text and '['+command+'-' in text:
-            s_index = text.index('['+command+'-')
-            e_index = text.index(']',s_index)
-            command_content = text[s_index+len(command)+2:e_index]
-            return (s_index, e_index, command_content)
+            try:
+                s_index = text.index('['+command+'-')
+                e_index = text.index('] ',s_index)
+                command_content = text[s_index+len(command)+2:e_index]
+                return (s_index, e_index, command_content)
+            except ValueError:
+                logging.error('command格式錯誤! 請檢查格式正確，或是結尾是否有空格。 '+text)
         return None
 
     def send_to_user(self, platform_name, user_id, msg):

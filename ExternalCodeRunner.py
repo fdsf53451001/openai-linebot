@@ -31,8 +31,11 @@ class ExternalCodeRunner():
     
     def fetch_command_content(self, text, command):
         if text and '['+command+'-' in text:
-            s_index = text.index('['+command+'-')
-            e_index = text.index(']',s_index)
-            command_content = text[s_index+len(command)+2:e_index]
-            return (s_index, e_index, command_content)
+            try:
+                s_index = text.index('['+command+'-')
+                e_index = text.index('] ',s_index)
+                command_content = text[s_index+len(command)+2:e_index]
+                return (s_index, e_index, command_content)
+            except ValueError:
+                logging.error('command格式錯誤! 請檢查格式正確，或是結尾是否有空格。 '+text)
         return None
