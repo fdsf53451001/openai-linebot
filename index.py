@@ -24,6 +24,7 @@ from APIHandler import APIHandler
 
 from Keyword import Keywords, Keyword
 from Setting import ChatSetting
+from SystemSetting import SystemSetting
 from Story import Story_name, Story_sentence
 from User import User
 
@@ -31,7 +32,7 @@ argument = Argument()
 
 # set threading lock prevent sqlite error
 db_lock = threading.Lock()
-db = database(db_lock)
+db = database(argument.read_conf('sqlite','db_path'),db_lock)
 
 chatgpt = ChatGPT(db,argument.openai_key)
 messageHandler = MessageHandler(db,chatgpt)
@@ -257,10 +258,11 @@ api.add_resource(ChatSetting, '/api/setting/chat/<string:key>',resource_class_kw
 api.add_resource(Story_name, '/api/story_name',resource_class_kwargs={'db':db,'apiHandler':apiHandler})
 api.add_resource(Story_sentence, '/api/story_sentence/<string:story_id>',resource_class_kwargs={'db':db,'apiHandler':apiHandler})
 api.add_resource(User, '/api/user/<string:UUID>',resource_class_kwargs={'db':db,'apiHandler':apiHandler})
+api.add_resource(SystemSetting, '/api/system_setting',resource_class_kwargs={'apiHandler':apiHandler})
 
 if __name__ == "__main__":
     # run_with_ngrok(app)
-    app.run(host='0.0.0.0',port=8000,debug=False)
+    app.run(host='0.0.0.0',port=8001,debug=False)
     # app.run(host='0.0.0.0',port=443,ssl_context=('cert/cert.pem', 'cert/privkey.pem'))
 
     # talk_test()

@@ -184,12 +184,12 @@ class MessageHandler:
         thread.start()
 
         s_time = time.time()
-        timeout_warning = self.argument.read_conf('function','chatgpt_timeout_warning_sec')
-        timeout_cut = self.argument.read_conf('function','chatgpt_timeout_cut_sec')
+        timeout_warning = self.argument.read_conf('openai','openai_timeout_warning_sec')
+        timeout_cut = self.argument.read_conf('openai','openai_timeout_cut_sec')
         while thread.is_alive() and time.time()-s_time < int(timeout_warning):
             pass    # waiting reply
         
-        if thread.is_alive(): # send warning
+        if thread.is_alive() and self.argument.read_conf('openai','openai_warning_message'): # send warning
             self.send_to_user(platform_name, user_id, "等待回應中...")
             logging.warning("OpenAI reply timeout for "+timeout_warning+" seconds!")
         
@@ -202,7 +202,7 @@ class MessageHandler:
             reply_msg = reply_msg.replace("AI:", "", 1)
         else:
             reply_msg = "OpenAI 沒有回應或花費太久，請稍候再嘗試！"
-            self.send_to_user(platform_name, user_id, reply_msg)
+            # self.send_to_user(platform_name, user_id, reply_msg)
             logging.warning(reply_msg)
         
         return reply_msg

@@ -4,8 +4,8 @@ import threading
 import json
 
 class database:
-    def __init__(self, db_lock):
-        self.conn = sqlite3.connect('data/chat.db', check_same_thread=False)
+    def __init__(self, db_file_path, db_lock):
+        self.conn = sqlite3.connect(db_file_path, check_same_thread=False)
         self.c = self.conn.cursor()
         self.db_lock = db_lock
 
