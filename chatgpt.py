@@ -27,7 +27,10 @@ class ChatGPT:
             else:
                 role = 'user'
             message_list.append({'role':role,'content':row[1]})
+        
+        return self.send_to_openai(message_list)
 
+    def send_to_openai(self ,message_list):
         try:
             logging.debug('send to openai %s',message_list[-1])
             response = openai.ChatCompletion.create(
@@ -43,4 +46,7 @@ class ChatGPT:
                 return None
         
         except openai.error.RateLimitError:
+            return None
+        
+        except ConnectionResetError:
             return None

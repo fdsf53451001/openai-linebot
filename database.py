@@ -74,6 +74,32 @@ class database:
         else:
             return None
 
+    ### talk analyze
+
+    def load_chat_start_index_group_by_time_gap(self, time_gap=60): # sec
+        result = self.deal_sql_request('SELECT messageId,time, (time/1000) as ts   FROM Message GROUP BY ts-ts%('+str(time_gap)+')')
+        return result
+
+    def load_chats_by_start_index_limit_time(self, s_index, t_start, duration=60):
+        result = self.deal_sql_request('SELECT direction,text FROM Message WHERE messageId>='+str(s_index)+' AND time<'+str(t_start+duration*1000))
+        return result
+
+    def add_chat_session(self, messageId, time):
+        result = self.deal_sql_request('Insert INTO Chat_session(messageId,time) SELECT '+str(messageId)+','+str(time)+' WHERE NOT EXISTS (SELECT 1 FROM Chat_session WHERE messageId=='+str(messageId)+')')
+        return result
+
+    def load_chat_session(self):
+        result = self.deal_sql_request('SELECT sessionId, messageId,time,analyze FROM Chat_session')
+        return result
+    
+    def load_chat_session_no_analyze(self):
+        result = self.deal_sql_request('SELECT sessionId, messageId,time FROM Chat_session WHERE analyze IS NULL')
+        return result
+
+    def save_chat_analyze(self, sessionId, analyze):
+        result = self.deal_sql_request('UPDATE Chat_session SET analyze="'+analyze+'" WHERE sessionId='+str(sessionId))
+        return result
+
     ### System Logs
 
     def load_system_logs(self):
@@ -213,6 +239,6 @@ class database:
         return result
 
 if __name__ == '__main__':
-    db = database(threading.Lock())
-    data = db.load_user_extra_data()
+    db = database('data/chat.db',threading.Lock())
+    data = db.load_chat_session_no_analyze()
     print(data)

@@ -21,6 +21,7 @@ from chatgpt import ChatGPT
 from database import database
 from MessageHandler import MessageHandler
 from APIHandler import APIHandler
+from ChatAnalyze import ChatAnalyze
 
 from Keyword import Keywords, Keyword
 from Setting import ChatSetting
@@ -37,6 +38,12 @@ db = database(argument.read_conf('sqlite','db_path'),db_lock)
 chatgpt = ChatGPT(db,argument.openai_key)
 messageHandler = MessageHandler(db,chatgpt)
 apiHandler = APIHandler(db)
+
+# doing talk emotion analyze, this will take a while
+# just for test purpose
+chatAnalyze = ChatAnalyze(db, chatgpt)
+chatAnalyze.search_chat_session()
+chatAnalyze.analyze_with_openai()
 
 if argument.read_conf('platform','line') == 'true':
     from chat_platform.line_platform import line_platform
