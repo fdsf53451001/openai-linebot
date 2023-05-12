@@ -221,7 +221,6 @@ def login():
 @app.route("/check_login", methods=['POST'])
 def check_login():
     if request.method != 'POST':
-        print('get')
         return redirect(url_for('login'))
     username = request.values['username']
     password = request.values['password']

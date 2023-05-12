@@ -103,7 +103,6 @@ class MessageHandler:
         
         command_content = self.fetch_command_content(rule,'Regex')
         if command_content: # match regex
-            print(command_content[2])
             regex = re.compile(command_content[2])
             match = regex.search(receive_text)
             if not match : return False
