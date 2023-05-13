@@ -10,7 +10,7 @@ class ExternalCodeRunner():
         if not command_content:
             return command
 
-        threading.Thread(target=self.run_command, args=(command[2], platform_name, user_id, send_to_user)).start()
+        threading.Thread(target=self.run_command, args=(command_content[2], platform_name, user_id, send_to_user)).start()
         return 'Code Running...'
 
     def run_command(self, command, platform_name, user_id, send_to_user):
@@ -18,7 +18,12 @@ class ExternalCodeRunner():
         result = None
         if command=='hello_world':
             result = self.run('python3 custom_code/hello_world.py').decode()
-
+        else:
+            result = '程式錯誤！'
+            logging.error('command錯誤！指定程式不存在：'+command)
+        
+        if not result or result=='':
+            result = '程式執行完成！'
         send_to_user(platform_name, user_id, result) 
 
     def run(self, command):

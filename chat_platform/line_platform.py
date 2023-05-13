@@ -5,8 +5,8 @@ import logging
 
 class line_platform():
     def __init__(self, argument, messageHandler):
-        self.line_bot_api = LineBotApi(argument.linebot_apt)
-        self.line_handler = WebhookHandler(argument.webhook_secret)
+        self.line_bot_api = LineBotApi(argument.line_channel_access_token)
+        self.line_handler = WebhookHandler(argument.line_channel_secret)
         self.line_handler.add(MessageEvent, message=TextMessage)(self.handle_message)
         self.messageHandler = messageHandler
         self.messageHandler.set_platform('line',self)
