@@ -269,7 +269,7 @@ api.add_resource(SystemSetting, '/api/system_setting',resource_class_kwargs={'ap
 
 if __name__ == "__main__":
     # run_with_ngrok(app)
-    app.run(host='0.0.0.0',port=8001,debug=False)
+    app.run(host='0.0.0.0',port=80,debug=False)
     # app.run(host='0.0.0.0',port=443,ssl_context=('cert/cert.pem', 'cert/privkey.pem'))
 
     # talk_test()

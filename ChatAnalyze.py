@@ -13,6 +13,7 @@ class ChatAnalyze:
     def analyze_with_openai(self):
         emotions = ['快樂','驚訝','恐懼','厭惡','憤怒','悲傷']
         chat_sessions = self.db.load_chat_session_no_analyze()
+        if not chat_sessions : return
         for chat_session in tqdm.tqdm(chat_sessions):
             data = self.db.load_chats_by_start_index_limit_time(chat_session[1], chat_session[2], 300)
             message_list = []
