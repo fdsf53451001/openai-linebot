@@ -1,9 +1,9 @@
 from flask_restful import Resource, request
 from Argument import Argument
-import json
+import os, sys, psutil, logging
 
 class SystemSetting(Resource):
-    def __init__(self,apiHandler):
+    def __init__(self, apiHandler):
         self.argument = Argument()
         self.apiHandler = apiHandler
         
@@ -30,4 +30,20 @@ class SystemSetting(Resource):
             with open('data/config.conf','w') as f:
                 f.write(request_argument['settings'])
             self.apiHandler.reload_password_hash()
+            # self.restart_program()
             return 'OK',200
+
+    def restart_program(self):
+        """Restarts the current program, with file objects and descriptors
+        cleanup
+        """
+
+        try:
+            p = psutil.Process(os.getpid())
+            for handler in p.open_files() + p.connections():
+                os.close(handler.fd)
+        except Exception as e:
+            logging.error(e)
+
+        sys.stdout.flush()
+        os.execv(sys.executable, ['python'] + [sys.argv[0]])

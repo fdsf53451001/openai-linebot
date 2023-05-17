@@ -228,8 +228,13 @@ class MessageHandler:
         # won't save to database
         logging.debug('send to [%s] %s %s',platform_name,user_id,msg)
 
-        if not platform_name=='command_line':
-            self.platforms[platform_name].send_to_user(user_id, msg)
+        if platform_name=='command_line':
+            return
+        
+        if not self.argument.read_conf('function','send_alarm_msg'):
+            return
+        
+        self.platforms[platform_name].send_to_user(user_id, msg)
 
     def check_user(self, user_id, platform_name):
         user_profile = self.db.check_user(user_id)
