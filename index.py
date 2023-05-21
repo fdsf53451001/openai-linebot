@@ -9,10 +9,11 @@ import time
 import json
 from datetime import datetime
 import logging
-logging.basicConfig(filename='data/system.log',
-                    filemode='w',
+logging.basicConfig(
                     format='* %(asctime)s %(levelname)s %(message)s',
-                    level=logging.WARN)
+                    level=logging.WARN , 
+                    handlers=[logging.StreamHandler(), logging.FileHandler('data/system.log')]
+                    )
 import threading
 sys.path.append('data/')
 sys.path.append('api/')
@@ -28,6 +29,7 @@ from Setting import ChatSetting
 from SystemSetting import SystemSetting
 from Story import Story_name, Story_sentence
 from User import User
+from ImageAPI import ImageAPI
 
 argument = Argument()
 
@@ -41,9 +43,10 @@ apiHandler = APIHandler(db)
 
 # doing talk emotion analyze, this will take a while
 # just for test purpose
-chatAnalyze = ChatAnalyze(db, chatgpt)
-chatAnalyze.search_chat_session()
-chatAnalyze.analyze_with_openai()
+if argument.read_conf('openai','analyze_msg_with_openai') == 'true':
+    chatAnalyze = ChatAnalyze(db, chatgpt)
+    chatAnalyze.search_chat_session()
+    chatAnalyze.analyze_with_openai()
 
 if argument.read_conf('platform','line') == 'true':
     from chat_platform.line_platform import line_platform
@@ -91,8 +94,8 @@ def talk_test():
         user_id = 'command_line'
         receive_text = input('text:')
         receive_timestamp = int(time.time()*1000)
-        (reply_msg,reply_quick_reply) = messageHandler.handdle('command_line',user_id, receive_text, receive_timestamp)
-        print('reply:',reply_msg)
+        reply_msg = messageHandler.handdle('command_line',user_id, receive_text, receive_timestamp)
+        print('reply:',str(reply_msg))
 
 @app.route('/keyword')
 def keyword_page():
@@ -266,6 +269,7 @@ api.add_resource(Story_name, '/api/story_name',resource_class_kwargs={'db':db,'a
 api.add_resource(Story_sentence, '/api/story_sentence/<string:story_id>',resource_class_kwargs={'db':db,'apiHandler':apiHandler})
 api.add_resource(User, '/api/user/<string:UUID>',resource_class_kwargs={'db':db,'apiHandler':apiHandler})
 api.add_resource(SystemSetting, '/api/system_setting',resource_class_kwargs={'apiHandler':apiHandler})
+api.add_resource(ImageAPI, '/api/image/<string:filename>',resource_class_kwargs={'db':db,'apiHandler':apiHandler})
 
 if __name__ == "__main__":
     # run_with_ngrok(app)

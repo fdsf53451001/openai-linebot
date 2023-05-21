@@ -45,7 +45,18 @@
                         <td>0</td>
                         <td><input type="checkbox" id="input-enable" checked></td>
                         <td><input type="text" id="input-keyword" class="form-control form-control-sm" aria-describedby="inputGroup-sizing-sm"></td>
-                        <td><input type="text" id="input-reply" class="form-control form-control-sm" aria-describedby="inputGroup-sizing-sm"></td>
+                        <td>
+                            <div class="row">
+                                <div class="col-10">
+                                    <input type="text" id="input-reply" class="form-control form-control-sm" aria-describedby="inputGroup-sizing-sm">
+                                </div>
+                                <div class="col-2">
+                                    <button type="button" class="btn btn-outline-primary btn-sm" onclick="on_modal_click('input-reply')">
+                                        R
+                                    </button>
+                                </div> 
+                            </div>                                                       
+                        </td>
                         <td><button type="button" id="input-send" class="btn btn-outline-primary btn-sm" onclick="add_keyword()">ADD</button></td>
                     </tr>
                 </tbody>
@@ -53,6 +64,70 @@
         </div>
     </div>
 </div>
+
+<!-- Modal -->
+<div class="modal fade" id="ModalRichDisplay" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog modal-lg" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="myModalLabel">Rich Display 以圖片或客製化訊息回覆</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <!-- menu -->
+        <div class="modal-body">
+            <div style="display: inline-block;">
+                <button type="button" class="btn btn-outline-primary btn-sm" onmousedown="toggle_reply_mode('image')">
+                    Image
+                </button>
+                <button type="button" class="btn btn-outline-primary btn-sm" onmousedown="toggle_reply_mode('audio')">
+                    Audio
+                </button>
+                <button type="button" class="btn btn-outline-primary btn-sm" onmousedown="toggle_reply_mode('video')">
+                    Video
+                </button>
+            </div>
+            <hr/>
+            <!-- content -->
+            <div id="image_reply_content" class="reply_content">
+                <h3>Image</h3>
+                <form id="upload-form" enctype="multipart/form-data">
+                    <input type="file" name="file" id="file-input">
+                    <input type="submit" value="上傳圖片">
+                    <br/>
+                    <h6 id="img-upload-status">請上傳檔案。</h6>
+                </form>
+                <img id="preview">
+            </div>
+            <div id="audio_reply_content" class="reply_content">
+                <h3>Audio</h3>
+                <form id="upload-form" enctype="multipart/form-data">
+                    <input type="file" name="file" id="file-input">
+                    <input type="submit" value="上傳圖片">
+                    <br/>
+                    <h6 id="img-upload-status">請上傳檔案。</h6>
+                </form>
+                <img id="preview">
+            </div>
+            <div id="video_reply_content" class="reply_content">
+                <h3>Video</h3>
+                <form id="upload-form" enctype="multipart/form-data">
+                    <input type="file" name="file" id="file-input">
+                    <input type="submit" value="上傳圖片">
+                    <br/>
+                    <h6 id="img-upload-status">請上傳檔案。</h6>
+                </form>
+                <img id="preview">
+            </div>
+        </div>
+        
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
 {%endblock%}
 
 {%block PAGEDOWN_SCRIPT%}
@@ -130,6 +205,79 @@
     }
 
     updateTable();
+</script>
+
+<script>
+    // script for rich display modal
+
+    function on_modal_click(entry_field_input){
+        $('#ModalRichDisplay').modal('toggle');
+        entry_field = entry_field_input;
+    }
+
+    function toggle_reply_mode(mode){
+        // hide all element in class reply_content
+        var reply_content = document.getElementsByClassName("reply_content");
+        for (let i = 0; i < reply_content.length; i++) {
+            reply_content[i].style.display = "none";
+        }
+        // display the element with id mode+'_reply_content'
+        document.getElementById(mode+'_reply_content').style.display = "block";
+    }
+    // show default content for image reply
+    toggle_reply_mode('image')
+
+    $(document).ready(function() {
+        $('#file-input').change(function() {
+            var file = this.files[0];
+            var fileType = file.type;
+            var fileSize = file.size;
+            if (fileType != 'image/png' && fileType != 'image/jpeg') {
+                alert('只能上傳 PNG 或 JPEG 格式的圖片！');
+                return false;
+            }
+            if (fileSize > 1024 * 1024) {
+                alert('圖片大小不能超過 1MB！');
+                return false;
+            }
+
+            $('#img-upload-status').html('請點擊上傳。')
+
+            var reader = new FileReader();
+            reader.onload = function(event) {
+                var img = new Image();
+                img.onload = function() {
+                    var canvas = document.createElement('canvas');
+                    canvas.width = img.width;
+                    canvas.height = img.height;
+                    var ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0);
+                    $('#preview').attr('src', canvas.toDataURL());
+                };
+                img.src = event.target.result;
+            };
+            reader.readAsDataURL(file);
+        });
+        $('#upload-form').submit(function(event) {
+            event.preventDefault();
+            var formData = new FormData(this);
+            $.ajax({
+                url: "/api/image/img"+"?sid={{PASS_DATA['SID']}}",
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(data) {
+                    $('#img-upload-status').html('上傳成功！')
+                    $('#'+entry_field).val("[LoadImage-" + data + "] ")
+                },
+                error: function(data) {
+                    $('#img-upload-status').html('上傳失敗！')
+                    console.error(data)
+                }
+            });
+        });
+    });
 </script>
 
 {%endblock%}

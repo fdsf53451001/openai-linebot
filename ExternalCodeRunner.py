@@ -3,12 +3,11 @@ import subprocess
 import logging
 
 class ExternalCodeRunner():
-    def check_format(self, command, platform_name, user_id, send_to_user):
-        if not command:
-            return None
-        command_content = self.fetch_command_content(command, 'ExtCode')
+    def check_format(self, msg, platform_name, user_id, send_to_user) -> str:
+
+        command_content = self.fetch_command_content(msg, 'ExtCode')
         if not command_content:
-            return command
+            return msg
 
         threading.Thread(target=self.run_command, args=(command_content[2], platform_name, user_id, send_to_user)).start()
         return 'Code Running...'

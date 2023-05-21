@@ -6,6 +6,8 @@ import logging
 from linebot.models import QuickReply
 from linebot.models import QuickReplyButton
 from linebot.models import MessageAction
+from linebot.models.send_messages import TextSendMessage, ImageSendMessage
+from linebot.models.send_messages import SendMessage
 
 from Argument import Argument
 from ExternalCodeRunner import ExternalCodeRunner
@@ -32,7 +34,6 @@ class MessageHandler:
             return ('You are banned by admin!', None)
 
         reply_msg = None
-        reply_quick_reply = None
         (reply_mode,reply_rule) = (0,None)  
         # 0=none, 1=default_reply, 2=keyword, 3=story, 4=chatgpt, 5=command
 
@@ -40,40 +41,50 @@ class MessageHandler:
         if reply_msg : reply_mode = 5
 
         if self.argument.read_conf('function','default_reply') == 'true' and reply_msg == None:
-            reply_msg = self.argument.read_conf('function','default_reply_word')
-            if reply_msg : reply_mode = 1
+            msg = self.argument.read_conf('function','default_reply_word')
+            if msg: 
+                reply_msg = TextSendMessage(text=msg)
+                reply_mode = 1
 
         if self.argument.read_conf('function','keyword_reply') == 'true' and reply_msg == None:
-            reply_msg = self.keyword_hold(user_id, receive_text)
-            if reply_msg : 
-                reply_rule = reply_msg[1]
-                reply_msg = reply_msg[0]
+            msg = self.keyword_hold(user_id, receive_text)
+            if msg : 
+                reply_rule = msg[0]
+                reply_msg = msg[1]
                 reply_mode = 2
             
         if self.argument.read_conf('function','story_reply') == 'true' and reply_msg == None:
-            (reply_rule, reply_msg) = self.story_hold(platform_name,user_id,receive_text)
-            if reply_msg : 
+            (reply_rule, msg) = self.story_hold(platform_name,user_id,receive_text)
+            if msg : 
                 reply_mode = 3
                 if platform_name=='line': # only line platform support quick reply
-                    reply_quick_reply = self.story_generate_quick_reply(reply_rule)
+                    quick_reply = self.story_generate_quick_reply(reply_rule)
+                reply_msg = TextSendMessage(text=msg,quick_reply=quick_reply)
 
-        reply_msg = self.extrunner.check_format(reply_msg, platform_name, user_id, self.send_to_user)
+        if type(reply_msg) == TextSendMessage:
+            reply_msg.text = self.extrunner.check_format(reply_msg.text, platform_name, user_id, self.send_to_user)
 
-        reply_msg = self.check_user_variable(user_id, reply_msg)
+            reply_msg.text = self.check_user_variable(user_id, reply_msg.text)
 
-        if self.argument.read_conf('function','chatgpt_reply') == 'true'  and reply_msg == None:
+            reply_msg = self.check_image_reply(reply_msg)
+
+        if self.argument.read_conf('function','chatgpt_reply') == 'true' and reply_msg == None:
             reply_msg = self.chatgpt_hold(platform_name,user_id)
             reply_mode = 4
 
         if reply_msg == None:
-            reply_msg = "所有對話引擎不可用，請檢查設定!"
+            reply_msg = TextSendMessage(text="所有對話引擎不可用，請檢查設定!")
             reply_mode = 0
             logging.warning('all reply engine are disabled!')
 
-        logging.debug('reply to [%s] %s %s',platform_name,user_id,reply_msg)
-        chatgpt_sentence_id = self.db.save_chat(user_id, int(time.time()*1000), 0, reply_msg)  
+
+        logging.debug('reply to [%s] %s %s',platform_name,user_id,str(reply_msg))
+        if reply_msg is TextSendMessage: # text message
+            chatgpt_sentence_id = self.db.save_chat(user_id, int(time.time()*1000), 0, reply_msg.text)
+        else: # rich message
+            chatgpt_sentence_id = self.db.save_chat(user_id, int(time.time()*1000), 0, str(reply_msg))
         self.db.save_reply(chatgpt_sentence_id, reply_mode, reply_rule)
-        return (reply_msg, reply_quick_reply)
+        return reply_msg
 
     # ? special command
 
@@ -85,10 +96,10 @@ class MessageHandler:
                 self.db.save_chat(user_id, t, 1, '')
                 sid = self.db.save_chat(user_id, t, 0, '')
                 self.db.save_reply(sid, 5, None)
-            return 'OK'
+            return TextSendMessage(text='OK')
         return None
     
-    def check_user_variable(self, user_id, msg):
+    def check_user_variable(self, user_id, msg) -> str:
         command_content = self.fetch_command_content(msg,'LoadUserData')
         if command_content:
             user_value = self.db.load_user_extra_data(user_id,command_content[2])
@@ -96,6 +107,12 @@ class MessageHandler:
                 return msg.replace(msg[command_content[0]:command_content[1]+1],user_value)
             else:
                 return msg.replace(msg[command_content[0]:command_content[1]+1],'None')
+        return msg
+
+    def check_image_reply(self, msg) -> SendMessage:
+        command_content = self.fetch_command_content(msg.text,'LoadImage')
+        if command_content:
+            return ImageSendMessage(original_content_url='https://unknownddsm.work/api/image/'+msg.text[command_content[0]+11:command_content[1]],preview_image_url='https://unknownddsm.work/api/image/'+msg.text[command_content[0]+11:command_content[1]])
         return msg
 
     def check_input_rule(self, user_id, rule, receive_text):
@@ -126,7 +143,7 @@ class MessageHandler:
         for keyword_row in keywords:
             if not keyword_row[1]: continue
             if self.check_input_rule(user_id, keyword_row[2], receive_text):
-                return (keyword_row[3],keyword_row[0])
+                return (keyword_row[0],TextSendMessage(text=keyword_row[3]))
         return None
     
     def story_hold(self, platform_name, user_id, receive_text):
@@ -203,8 +220,8 @@ class MessageHandler:
             reply_msg = "OpenAI 沒有回應或花費太久，請稍候再嘗試！"
             # self.send_to_user(platform_name, user_id, reply_msg)
             logging.warning(reply_msg)
-        
-        return reply_msg
+    
+        return TextSendMessage(text=reply_msg)
 
     def chatgpt_handler(self, platform_name, user_id, result):
         reply_msg = self.chatgpt.get_response(user_id)

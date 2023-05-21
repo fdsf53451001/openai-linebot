@@ -33,17 +33,14 @@ class line_platform():
         user_id = event.source.user_id
         receive_text = event.message.text
         receive_timestamp = event.timestamp
-        # logging.info('receive from %s %s',user_id,receive_text)
 
-        (reply_msg,reply_quick_reply) = self.messageHandler.handdle('line',user_id, receive_text, receive_timestamp)
+        reply_msg = self.messageHandler.handdle('line',user_id, receive_text, receive_timestamp)
 
-        # logging.info('reply to %s %s',user_id,reply_msg)
         self.line_bot_api.reply_message(
                 event.reply_token,
-                TextSendMessage(text=reply_msg,quick_reply=reply_quick_reply))
+                reply_msg)
 
     def send_to_user(self, user_id, message):
-        # logging.info('send to %s %s',user_id,message)
         if user_id=='testing': return
         self.line_bot_api.push_message(user_id, TextSendMessage(text=message))
 
