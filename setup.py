@@ -5,6 +5,7 @@ import shutil
 # default login info : username/password
 
 os.makedirs('data', exist_ok=True)
+os.makedirs('resources/image', exist_ok=True)
 os.makedirs('/opt/grafana', exist_ok=True)
 
 shutil.copy('default/config.conf', 'data/config.conf')
