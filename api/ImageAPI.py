@@ -9,7 +9,7 @@ class ImageAPI(Resource):
     def __init__(self,db,apiHandler):
         self.db = db
         self.apiHandler = apiHandler
-        self.baseURL = '/home/user/Desktop/openai-linebot/resources/image/'
+        self.baseURL = 'resources/image/'
     
     def post(self,filename):
         user_config = self.apiHandler.check_request_username(request)
