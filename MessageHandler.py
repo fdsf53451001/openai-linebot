@@ -112,7 +112,10 @@ class MessageHandler:
     def check_image_reply(self, msg) -> SendMessage:
         command_content = self.fetch_command_content(msg.text,'LoadImage')
         if command_content:
-            return ImageSendMessage(original_content_url='https://unknownddsm.work/api/image/'+msg.text[command_content[0]+11:command_content[1]],preview_image_url='https://unknownddsm.work/api/image/'+msg.text[command_content[0]+11:command_content[1]])
+            img_domain = self.argument.read_conf('system','system_domain')+'api/image/'
+            return ImageSendMessage(original_content_url = img_domain+msg.text[command_content[0]+11:command_content[1]],
+                                    preview_image_url = img_domain+msg.text[command_content[0]+11:command_content[1]]
+                                    )
         return msg
 
     def check_input_rule(self, user_id, rule, receive_text):
