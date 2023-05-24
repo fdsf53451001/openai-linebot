@@ -1,0 +1,64 @@
+
+<!-- Modal -->
+<div class="modal fade" id="ModalRichDisplay" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog modal-lg" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="myModalLabel">Rich Display 以圖片或客製化訊息回覆</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <!-- menu -->
+        <div class="modal-body">
+            <div style="display: inline-block;">
+                <button type="button" class="btn btn-outline-primary btn-sm" onmousedown="toggle_reply_mode('image')">
+                    Image
+                </button>
+                <button type="button" class="btn btn-outline-primary btn-sm" onmousedown="toggle_reply_mode('audio')">
+                    Audio
+                </button>
+                <button type="button" class="btn btn-outline-primary btn-sm" onmousedown="toggle_reply_mode('video')">
+                    Video
+                </button>
+            </div>
+            <hr/>
+            <!-- content -->
+            <div id="image_reply_content" class="reply_content">
+                <h3>Image</h3>
+                <form id="upload-form" enctype="multipart/form-data">
+                    <input type="file" name="file" id="file-input">
+                    <input type="submit" value="上傳圖片">
+                    <br/>
+                    <h6 id="img-upload-status">請上傳檔案。</h6>
+                </form>
+                <img id="preview">
+            </div>
+            <div id="audio_reply_content" class="reply_content">
+                <h3>Audio</h3>
+                <form id="upload-form" enctype="multipart/form-data">
+                    <input type="file" name="file" id="file-input">
+                    <input type="submit" value="上傳圖片">
+                    <br/>
+                    <h6 id="img-upload-status">請上傳檔案。</h6>
+                </form>
+                <img id="preview">
+            </div>
+            <div id="video_reply_content" class="reply_content">
+                <h3>Video</h3>
+                <form id="upload-form" enctype="multipart/form-data">
+                    <input type="file" name="file" id="file-input">
+                    <input type="submit" value="上傳圖片">
+                    <br/>
+                    <h6 id="img-upload-status">請上傳檔案。</h6>
+                </form>
+                <img id="preview">
+            </div>
+        </div>
+        
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+</div>
