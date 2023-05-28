@@ -91,6 +91,10 @@
         </div>
     </div>
 </div>
+
+<!-- modal -->
+{% include 'rich_display_reply.html' %}
+
 {%endblock%}
 
 {%block PAGEDOWN_SCRIPT%}
@@ -231,7 +235,18 @@
                                         <label class="btn btn-outline-primary" for="btnradio'+i+'-3">輸出</label>\
                                       </div>\
                                 </td>\
-                                <td><input type="text" id="input-outputorcondiction'+i+'" class="form-control form-control-sm" aria-describedby="inputGroup-sizing-sm" onchange="on_sentence_output_change('+i+')" value="'+outputorcondiction+'"></td>\
+                                <td>\
+                                    <div class="row">\
+                                        <div class="col-10">\
+                                            <input type="text" id="input-outputorcondiction'+i+'" class="form-control form-control-sm" aria-describedby="inputGroup-sizing-sm" onchange="on_sentence_output_change('+i+')" value="'+outputorcondiction+'">\
+                                        </div>\
+                                        <div class="col-2">\
+                                            <button type="button" class="btn btn-outline-primary btn-sm" onclick="on_modal_click(\'input-outputorcondiction'+i+'\')">\
+                                                R\
+                                            </button>\
+                                        </div> \
+                                    <div>\
+                                </td>\
                                 <td>\
                                     <button type="button" id="input-send" class="btn btn-outline-danger btn-sm" onclick="on_sentence_add('+i+','+sentence_id+')">+</button>\
                                     <button type="button" id="input-send" class="btn btn-outline-primary btn-sm" onclick="on_sentence_delete('+i+')">-</button>\
@@ -299,4 +314,8 @@
     get_story_name()
     // load_story_content("1")
 </script>
+
+<!-- modal js -->
+{% include 'rich_display_reply_js.html' %}
+
 {%endblock%}

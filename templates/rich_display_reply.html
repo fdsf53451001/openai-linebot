@@ -11,6 +11,7 @@
         </div>
         <!-- menu -->
         <div class="modal-body">
+            <p>關於回覆模式，請參考<a href="https://developers.line.biz/en/docs/messaging-api/message-types/" target="_BLANK">LINE官方網頁</a></p>
             <div style="display: inline-block;">
                 <button type="button" class="btn btn-outline-primary btn-sm" onmousedown="toggle_reply_mode('image')">
                     Image
@@ -21,38 +22,117 @@
                 <button type="button" class="btn btn-outline-primary btn-sm" onmousedown="toggle_reply_mode('video')">
                     Video
                 </button>
+                <button type="button" class="btn btn-outline-primary btn-sm" onmousedown="toggle_reply_mode('buttons_template')">
+                    Buttons Template
+                </button>
+                <button type="button" class="btn btn-outline-primary btn-sm" onmousedown="toggle_reply_mode('buttons_templates')">
+                    Buttons Templates
+                </button>
             </div>
             <hr/>
             <!-- content -->
             <div id="image_reply_content" class="reply_content">
                 <h3>Image</h3>
-                <form id="upload-form" enctype="multipart/form-data">
-                    <input type="file" name="file" id="file-input">
+                <form id="upload-form-image" enctype="multipart/form-data">
+                    <input type="file" name="file" id="file-input-image">
                     <input type="submit" value="上傳圖片">
                     <br/>
                     <h6 id="img-upload-status">請上傳檔案。</h6>
                 </form>
-                <img id="preview">
+                <img id="preview_image">
             </div>
+
             <div id="audio_reply_content" class="reply_content">
                 <h3>Audio</h3>
-                <form id="upload-form" enctype="multipart/form-data">
-                    <input type="file" name="file" id="file-input">
-                    <input type="submit" value="上傳圖片">
+                <form id="upload-form-audio" enctype="multipart/form-data">
+                    <input type="file" name="file" id="file-input-audio">
+                    <input type="submit" value="上傳音樂">
                     <br/>
-                    <h6 id="img-upload-status">請上傳檔案。</h6>
+                    <h6 id="audio-upload-status">請上傳檔案。</h6>
                 </form>
-                <img id="preview">
+                <img id="preview_audio">
             </div>
+
             <div id="video_reply_content" class="reply_content">
                 <h3>Video</h3>
-                <form id="upload-form" enctype="multipart/form-data">
-                    <input type="file" name="file" id="file-input">
+                <form id="upload-form-video" enctype="multipart/form-data">
+                    <input type="file" name="file" id="file-input-video">
+                    <input type="submit" value="上傳影片">
+                    <br/>
+                    <h6 id="video-upload-status">請上傳檔案。</h6>
+                </form>
+                <video id="preview_video"></video>
+            </div>
+
+            <div id="buttons_template_reply_content" class="reply_content">
+                <h3>Buttons Template</h3>
+                <form id="upload-form-buttons-template" enctype="multipart/form-data">
+                    <input type="file" name="file" id="file-input-buttons-template">
                     <input type="submit" value="上傳圖片">
                     <br/>
-                    <h6 id="img-upload-status">請上傳檔案。</h6>
+                    <h6 id="buttons-template-upload-status">請上傳檔案。</h6>
                 </form>
-                <img id="preview">
+                <img id="preview_buttons_template">
+                <p id="image_upload_result"></p>
+                <div class="input-group mb-3">
+                    <span class="input-group-text" id="inputGroup-title">Title</span>
+                    <input id="buttons_template_title" type="text" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-title">
+                </div>
+                <div class="input-group mb-3">
+                    <span class="input-group-text" id="inputGroup-text">Text</span>
+                    <input id="buttons_template_text" type="text" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-text">
+                </div>
+                <div class="input-group mb-3">
+                    <span class="input-group-text" id="inputGroup-action1">Action1</span>
+                    <input id="buttons_template_action1" type="text" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-action1" value="">
+                </div>
+                <div class="input-group mb-3">
+                    <span class="input-group-text" id="inputGroup-action2">Action2</span>
+                    <input id="buttons_template_action2" type="text" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-action2" value="不需要此按鈕則不需修改">
+                </div>
+                <div class="input-group mb-3">
+                    <span class="input-group-text" id="inputGroup-action3">Action3</span>
+                    <input id="buttons_template_action3" type="text" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-action3" value="不需要此按鈕則不需修改">
+                </div>
+                <button type="button" id="buttons-template-send" class="btn btn-primary btn-sm" onclick="on_button_template_send()">送出</button>
+            </div>
+
+            <div id="buttons_templates_reply_content" class="reply_content">
+                <h3>Buttons Templates</h3>
+                <p>使用說明：請先填寫第一頁，按下下方「下一頁」，再填寫第二頁...最多四頁</p>
+                <form id="upload-form-buttons-templates" enctype="multipart/form-data">
+                    <input type="file" name="file" id="file-input-buttons-templates">
+                    <input type="submit" value="上傳圖片">
+                    <br/>
+                    <h6 id="buttons-templates-upload-status">請上傳檔案。</h6>
+                </form>
+                <img id="preview_buttons_templates">
+                <p id="image_upload_result"></p>
+                <div class="input-group mb-3">
+                    <span class="input-group-text" id="inputGroup-title">Title</span>
+                    <input id="buttons_templates_title" type="text" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-title">
+                </div>
+                <div class="input-group mb-3">
+                    <span class="input-group-text" id="inputGroup-text">Text</span>
+                    <input id="buttons_templates_text" type="text" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-text">
+                </div>
+                <div class="input-group mb-3">
+                    <span class="input-group-text" id="inputGroup-action1">Action1</span>
+                    <input id="buttons_templates_action1" type="text" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-action1" value="">
+                </div>
+                <div class="input-group mb-3">
+                    <span class="input-group-text" id="inputGroup-action2">Action2</span>
+                    <input id="buttons_templates_action2" type="text" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-action2" value="不需要此按鈕則不需修改">
+                </div>
+                <div class="input-group mb-3">
+                    <span class="input-group-text" id="inputGroup-action3">Action3</span>
+                    <input id="buttons_templates_action3" type="text" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-action3" value="不需要此按鈕則不需修改">
+                </div>
+                <button type="button" id="buttons-templates-send" class="btn btn-outline-primary btn-sm" onclick="on_button_templates_prev_page()"><</button>
+                <div class="badge bg-primary text-wrap" id="button-templates-pageid">1</div>
+                <button type="button" id="buttons-templates-send" class="btn btn-outline-primary btn-sm" onclick="on_button_templates_next_page()">></button>
+
+                <button type="button" id="buttons-templates-send" class="btn btn-primary btn-sm"  style="margin-left: 10px;" onclick="on_button_templates_send()">送出</button>
             </div>
         </div>
         

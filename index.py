@@ -30,6 +30,8 @@ from SystemSetting import SystemSetting
 from Story import Story_name, Story_sentence
 from User import User
 from ImageAPI import ImageAPI
+from VideoAPI import VideoAPI
+from VideoThumbnailAPI import VideoThumbnailAPI
 
 argument = Argument()
 
@@ -270,6 +272,8 @@ api.add_resource(Story_sentence, '/api/story_sentence/<string:story_id>',resourc
 api.add_resource(User, '/api/user/<string:UUID>',resource_class_kwargs={'db':db,'apiHandler':apiHandler})
 api.add_resource(SystemSetting, '/api/system_setting',resource_class_kwargs={'apiHandler':apiHandler})
 api.add_resource(ImageAPI, '/api/image/<string:filename>',resource_class_kwargs={'db':db,'apiHandler':apiHandler})
+api.add_resource(VideoAPI, '/api/video/<string:filename>',resource_class_kwargs={'db':db,'apiHandler':apiHandler})
+api.add_resource(VideoThumbnailAPI, '/api/video_thumbnail/<string:filename>',resource_class_kwargs={'db':db,'apiHandler':apiHandler})
 
 if __name__ == "__main__":
     # run_with_ngrok(app)

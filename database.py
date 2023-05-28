@@ -132,7 +132,7 @@ class database:
         return result
 
     def add_keyword(self, enable, keyword, reply, note):
-        result = self.deal_sql_request('INSERT INTO Keyword (enable,keyword,reply,note) VALUES ("'+str(enable)+'","'+keyword+'","'+reply+'","'+note+'")')
+        result = self.deal_sql_request('INSERT INTO Keyword (enable,keyword,reply,note) VALUES ("'+str(enable)+'","'+keyword+'",\''+reply+'\',"'+note+'")')
         return result
     
     def delete_keyword(self, keyword_id):

@@ -2,12 +2,15 @@ import threading
 import time
 import re
 import logging
+import json
+from typing import Tuple
 
 from linebot.models import QuickReply
 from linebot.models import QuickReplyButton
 from linebot.models import MessageAction
-from linebot.models.send_messages import TextSendMessage, ImageSendMessage
+from linebot.models.send_messages import TextSendMessage, ImageSendMessage, VideoSendMessage
 from linebot.models.send_messages import SendMessage
+from linebot.models.template import ButtonsTemplate, TemplateSendMessage, CarouselColumn, CarouselTemplate
 
 from Argument import Argument
 from ExternalCodeRunner import ExternalCodeRunner
@@ -61,12 +64,7 @@ class MessageHandler:
                     quick_reply = self.story_generate_quick_reply(reply_rule)
                 reply_msg = TextSendMessage(text=msg,quick_reply=quick_reply)
 
-        if type(reply_msg) == TextSendMessage:
-            reply_msg.text = self.extrunner.check_format(reply_msg.text, platform_name, user_id, self.send_to_user)
-
-            reply_msg.text = self.check_user_variable(user_id, reply_msg.text)
-
-            reply_msg = self.check_image_reply(reply_msg)
+        reply_msg = self.check_rich_display(platform_name, user_id, reply_msg)
 
         if self.argument.read_conf('function','chatgpt_reply') == 'true' and reply_msg == None:
             reply_msg = self.chatgpt_hold(platform_name,user_id)
@@ -109,12 +107,45 @@ class MessageHandler:
                 return msg.replace(msg[command_content[0]:command_content[1]+1],'None')
         return msg
 
+    def check_rich_display(self, platform_name, user_id, reply_msg) -> SendMessage:
+        # TODO : 程式碼邏輯混亂，需要重構，避免不必要檢查
+        if type(reply_msg) == TextSendMessage:
+            reply_msg.text = self.extrunner.check_format(reply_msg.text, platform_name, user_id, self.send_to_user)
+
+            reply_msg.text = self.check_user_variable(user_id, reply_msg.text)
+
+        if type(reply_msg) == TextSendMessage:
+            reply_msg = self.check_image_reply(reply_msg)
+
+        if type(reply_msg) == TextSendMessage:
+            reply_msg = self.check_video_reply(reply_msg)
+
+        if type(reply_msg) == TextSendMessage:
+            reply_msg = self.check_buttons_template_reply(reply_msg)
+
+        if type(reply_msg) == TextSendMessage:
+            reply_msg =  self.check_buttons_templates_reply(reply_msg)
+
+        return reply_msg
+
     def check_image_reply(self, msg) -> SendMessage:
         command_content = self.fetch_command_content(msg.text,'LoadImage')
         if command_content:
             img_domain = self.argument.read_conf('system','system_domain')+'api/image/'
             return ImageSendMessage(original_content_url = img_domain+msg.text[command_content[0]+11:command_content[1]],
                                     preview_image_url = img_domain+msg.text[command_content[0]+11:command_content[1]]
+                                    )
+        return msg
+
+    def check_video_reply(self, msg) -> SendMessage:
+        command_content = self.fetch_command_content(msg.text,'LoadVideo')
+        if command_content:
+            video_domain = self.argument.read_conf('system','system_domain')+'api/video/'
+            video_thumbnail_domain = self.argument.read_conf('system','system_domain')+'api/video_thumbnail/'
+
+            video_file_name = msg.text[command_content[0]+11:command_content[1]].split('.')[0]
+            return VideoSendMessage(original_content_url = video_domain+msg.text[command_content[0]+11:command_content[1]],
+                                    preview_image_url = video_thumbnail_domain + video_file_name + '.jpg'
                                     )
         return msg
 
@@ -197,6 +228,45 @@ class MessageHandler:
                 quick_reply.append(QuickReplyButton(action=MessageAction(label=message, text=message)))
         return QuickReply(items=quick_reply) if quick_reply else None
 
+    def check_buttons_template_reply(self, reply_msg) -> SendMessage:
+        command_content = self.fetch_command_content(reply_msg.text,'ButtonsTemplate')
+        if command_content:
+            buttons_template_array = json.loads(command_content[2])
+            buttons_template = self.generate_button_template(buttons_template_array,ButtonsTemplate)
+            return TemplateSendMessage(alt_text=buttons_template_array['title'], template=buttons_template)
+        return reply_msg
+
+    def check_buttons_templates_reply(self, reply_msg) -> SendMessage:
+        command_content = self.fetch_command_content(reply_msg.text,'ButtonsTemplates')
+        if command_content:
+            buttons_template_arrays = json.loads(command_content[2])
+            buttons_templates = []
+            for buttons_template_array in buttons_template_arrays:
+                buttons_templates.append(self.generate_button_template(buttons_template_array,CarouselColumn))
+            return TemplateSendMessage(alt_text=buttons_template_arrays[0]['title'], template=CarouselTemplate(columns=buttons_templates))
+        return reply_msg
+
+    def generate_button_template(self, buttons_template_array, T):
+        # return ButtonsTemplate or CarouselColumn according to T
+        actions = []
+        if 'action1' in buttons_template_array:
+            actions.append(MessageAction(label=buttons_template_array['action1'], text=buttons_template_array['action1']))
+        if 'action2' in buttons_template_array:
+            actions.append(MessageAction(label=buttons_template_array['action2'], text=buttons_template_array['action2']))
+        if 'action3' in buttons_template_array:
+            actions.append(MessageAction(label=buttons_template_array['action3'], text=buttons_template_array['action3']))
+        actions = None if not actions else actions
+
+        img_domain = self.argument.read_conf('system','system_domain')+'api/image/'
+
+        buttons_template = T(
+            title = buttons_template_array['title'],
+            text = buttons_template_array['text'],
+            thumbnail_image_url = img_domain+buttons_template_array['img'],
+            actions = actions
+        )
+        return buttons_template
+
     def chatgpt_hold(self, platform_name, user_id):
         result = []
         thread = threading.Thread(target=self.chatgpt_handler, args=(platform_name,user_id,result))
@@ -232,7 +302,7 @@ class MessageHandler:
 
     # ? other utility
 
-    def fetch_command_content(self, text, command):
+    def fetch_command_content(self, text, command) -> Tuple[int,int,str]:
         if text and '['+command+'-' in text:
             try:
                 s_index = text.index('['+command+'-')
@@ -251,7 +321,7 @@ class MessageHandler:
         if platform_name=='command_line':
             return
         
-        if not self.argument.read_conf('function','send_alarm_msg'):
+        if not (self.argument.read_conf('function','send_alarm_msg')=='true'):
             return
         
         self.platforms[platform_name].send_to_user(user_id, msg)

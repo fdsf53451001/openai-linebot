@@ -19,7 +19,8 @@
     toggle_reply_mode('image')
 
     $(document).ready(function() {
-        $('#file-input').change(function() {
+        // image block
+        $('#file-input-image').change(function() {
             var file = this.files[0];
             var fileType = file.type;
             var fileSize = file.size;
@@ -39,19 +40,24 @@
                 var img = new Image();
                 img.onload = function() {
                     var canvas = document.createElement('canvas');
-                    // canvas.width = img.width;
-                    // canvas.height = img.height;
-                    canvas.width = 720;
-                    canvas.height = 480;
+                    canvas.width = img.width;
+                    canvas.height = img.height;
+                    if(canvas.width > 720){
+                        canvas.width = 720;
+                    }
+                    if(canvas.height > 480){
+                        canvas.height = 480;
+                    }        
                     var ctx = canvas.getContext('2d');
                     ctx.drawImage(img, 0, 0);
-                    $('#preview').attr('src', canvas.toDataURL());
+                    $('#preview_image').attr('src', canvas.toDataURL());
                 };
                 img.src = event.target.result;
             };
             reader.readAsDataURL(file);
         });
-        $('#upload-form').submit(function(event) {
+
+        $('#upload-form-image').submit(function(event) {
             event.preventDefault();
             var formData = new FormData(this);
             $.ajax({
@@ -62,7 +68,7 @@
                 contentType: false,
                 success: function(data) {
                     $('#img-upload-status').html('上傳成功！')
-                    $('#'+entry_field).val("[LoadImage-" + data + "] ")
+                    $('#'+entry_field).val("[LoadImage-" + data + "] ").change()
                 },
                 error: function(data) {
                     $('#img-upload-status').html('上傳失敗！')
@@ -70,5 +76,310 @@
                 }
             });
         });
+
+        // video block
+        $('#file-input-video').change(function() {
+            var file = this.files[0];
+            if (!file) {
+                alert('請選擇一個影片文件！');
+                return false;
+            }
+            
+            var fileType = file.type;
+            var fileSize = file.size;
+            if (fileType !== 'video/mp4' && fileType !== 'video/mpeg') {
+                alert('只能上傳 MP4 格式的影片！');
+                return false;
+            }
+            if (fileSize > 1024 * 1024 * 100) {
+                alert('影片大小不能超過 100MB！');
+                return false;
+            }
+
+            $('#video-upload-status').html('請點擊上傳。')
+
+            var video = document.createElement('video');
+            video.controls = true;
+            video.addEventListener('loadedmetadata', function() {
+                URL.revokeObjectURL(video.src); // 釋放URL物件
+                video.play(); // 自動播放影片
+            });
+            video.src = URL.createObjectURL(file);
+            $('#preview_video').html(video);
+        });
+
+        $('#upload-form-video').submit(function(event) {
+            event.preventDefault();
+            var formData = new FormData(this);
+            $.ajax({
+                url: "/api/video/video" + "?sid={{PASS_DATA['SID']}}",
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(data) {
+                    $('#video-upload-status').html('上傳成功！');
+                    $('#' + entry_field).val("[LoadVideo-" + data + "] ").change();
+                },
+                error: function(data) {
+                    $('#video-upload-status').html('上傳失敗！');
+                    console.error(data);
+                }
+            });
+        });
+
+        // buttons template block
+        $('#file-input-buttons-template').change(function() {
+            var file = this.files[0];
+            var fileType = file.type;
+            var fileSize = file.size;
+            if (fileType != 'image/png' && fileType != 'image/jpeg') {
+                alert('只能上傳 PNG 或 JPEG 格式的圖片！');
+                return false;
+            }
+            if (fileSize > 1024 * 1024) {
+                alert('圖片大小不能超過 1MB！');
+                return false;
+            }
+
+            $('#buttons-template-upload-status').html('請點擊上傳。')
+
+            var reader = new FileReader();
+            reader.onload = function(event) {
+                var img = new Image();
+                img.onload = function() {
+                    var canvas = document.createElement('canvas');
+                    canvas.width = img.width;
+                    canvas.height = img.height;
+                    if(canvas.width > 720){
+                        canvas.width = 720;
+                    }
+                    if(canvas.height > 480){
+                        canvas.height = 480;
+                    }               
+                    var ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0);
+                    $('#preview_buttons_template').attr('src', canvas.toDataURL());
+                };
+                img.src = event.target.result;
+            };
+            reader.readAsDataURL(file);
+        });
+
+        $('#upload-form-buttons-template').submit(function(event) {
+            event.preventDefault();
+            var formData = new FormData(this);
+            $.ajax({
+                url: "/api/image/img"+"?sid={{PASS_DATA['SID']}}",
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(data) {
+                    $('#buttons-template-upload-status').html('上傳成功！')
+                    $('#image_upload_result').html(data)
+                },
+                error: function(data) {
+                    $('#buttons-template-upload-status').html('上傳失敗！')
+                    console.error(data)
+                }
+            });
+        });
+
+        // buttons templates block
+        $('#file-input-buttons-templates').change(function() {
+            var file = this.files[0];
+            var fileType = file.type;
+            var fileSize = file.size;
+            if (fileType != 'image/png' && fileType != 'image/jpeg') {
+                alert('只能上傳 PNG 或 JPEG 格式的圖片！');
+                return false;
+            }
+            if (fileSize > 1024 * 1024) {
+                alert('圖片大小不能超過 1MB！');
+                return false;
+            }
+
+            $('#buttons-templates-upload-status').html('請點擊上傳。')
+
+            var reader = new FileReader();
+            reader.onload = function(event) {
+                var img = new Image();
+                img.onload = function() {
+                    var canvas = document.createElement('canvas');
+                    canvas.width = img.width;
+                    canvas.height = img.height;
+                    if(canvas.width > 720){
+                        canvas.width = 720;
+                    }
+                    if(canvas.height > 480){
+                        canvas.height = 480;
+                    }               
+                    var ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0);
+                    $('#preview_buttons_templates').attr('src', canvas.toDataURL());
+                };
+                img.src = event.target.result;
+            };
+            reader.readAsDataURL(file);
+        });
+
+        $('#upload-form-buttons-templates').submit(function(event) {
+            event.preventDefault();
+            var formData = new FormData(this);
+            $.ajax({
+                url: "/api/image/img"+"?sid={{PASS_DATA['SID']}}",
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(data) {
+                    $('#buttons-templates-upload-status').html('上傳成功！')
+                    $('#image_upload_result').html(data)
+                },
+                error: function(data) {
+                    $('#buttons-templates-upload-status').html('上傳失敗！')
+                    console.error(data)
+                }
+            });
+        });
+
+
     });
+
+    function on_button_template_send(){
+        let submit_data = {}
+        submit_data['img'] = $('#image_upload_result').html()
+        submit_data['title'] = $('#buttons_template_title').val()
+        submit_data['text'] = $('#buttons_template_text').val()
+        submit_data['action1'] = $('#buttons_template_action1').val()
+        submit_data['action2']  = $('#buttons_template_action2').val()
+        submit_data['action3']  = $('#buttons_template_action3').val()
+
+        // console.log(img_arg, title_arg, text_arg, action1_arg, action2_arg, action3_arg)   
+    
+        if (submit_data['img'] == ''){
+            alert('請先上傳圖片！')
+            return
+        }
+        if (submit_data['title'] == '' || submit_data['text'] == ''){
+            alert('請輸入標題與內文！')
+            return
+        }
+        if (submit_data['action1'] ==''){
+            alert('請至少輸入一個按鈕！')
+            return
+        }
+        if (submit_data['action2'] =='不需要此按鈕則不需修改'){
+            delete submit_data['action2']
+        }
+        if (submit_data['action3'] =='不需要此按鈕則不需修改'){
+            delete submit_data['action3']
+        }
+
+        $('#' + entry_field).val("[ButtonsTemplate-" + JSON.stringify(submit_data) + "] ").change();
+        alert('已送出！點擊關閉繼續。')
+    }
+
+    button_templates_page = []
+    function init_button_templates_page(){
+        button_templates_page = []
+        for (let i = 0; i < 4; i++){
+            button_templates_page.push([])
+        }
+    }
+    init_button_templates_page()
+
+    function on_button_templates_next_page(){
+        let pageid = parseInt($('#button-templates-pageid').html())-1
+        if (pageid == 3){
+            return
+        }
+        if(!save_current_button_templates_page()){
+            return
+        }
+        clear_button_templates_fields()
+        $('#button-templates-pageid').html(pageid+2).change()
+    }
+
+    function on_button_templates_prev_page(){
+        let pageid = parseInt($('#button-templates-pageid').html())-1
+        if (pageid == 0){
+            return
+        }
+        if(!save_current_button_templates_page()){
+            return
+        }
+        clear_button_templates_fields()
+        $('#button-templates-pageid').html(pageid).change()
+    }
+
+    function save_current_button_templates_page(){
+        // js str to int
+        let pageid = parseInt($('#button-templates-pageid').html())-1
+
+        let submit_data = {}
+        submit_data['img'] = $('#image_upload_result').html()
+        submit_data['title'] = $('#buttons_templates_title').val()
+        submit_data['text'] = $('#buttons_templates_text').val()
+        submit_data['action1'] = $('#buttons_templates_action1').val()
+        submit_data['action2']  = $('#buttons_templates_action2').val()
+        submit_data['action3']  = $('#buttons_templates_action3').val()
+
+        // console.log(img_arg, title_arg, text_arg, action1_arg, action2_arg, action3_arg)   
+    
+        if (submit_data['img'] == ''){
+            alert('請先上傳圖片！')
+            return false
+        }
+        if (submit_data['title'] == '' || submit_data['text'] == ''){
+            alert('請輸入標題與內文！')
+            return false
+        }
+        if (submit_data['action1'] ==''){
+            alert('請至少輸入一個按鈕！')
+            return false
+        }
+        if (submit_data['action2'] =='不需要此按鈕則不需修改'){
+            delete submit_data['action2']
+        }
+        if (submit_data['action3'] =='不需要此按鈕則不需修改'){
+            delete submit_data['action3']
+        }
+
+        button_templates_page[pageid] = submit_data
+        return true
+    }
+
+    function clear_button_templates_fields(){
+        $('#buttons_templates_title').val('')
+        $('#buttons_templates_text').val('')
+        $('#buttons_templates_action1').val('')
+        $('#buttons_templates_action2').val('不需要此按鈕則不需修改')
+        $('#buttons_templates_action3').val('不需要此按鈕則不需修改')
+        $('#preview_buttons_templates').attr('src', '')
+        $('#file-input-buttons-templates').val('')
+        $('#buttons-templates-upload-status').html('請上傳檔案。')
+        $('#image_upload_result').html('')
+    }
+
+    function on_button_templates_send(){
+        save_current_button_templates_page()
+        // let j=4
+        // for(let i=0;i<j;i++){
+        //     if (button_templates_page[i].length == 0){
+        //         button_templates_page.splice(i, 1);
+        //         i -= 1;
+        //         j -= 1;
+        //     }
+        // }
+        button_templates_page = button_templates_page.filter(button => button.length !== 0);
+        if (button_templates_page.length <= 1){
+            alert('請至少輸入兩頁！')
+            return
+        }
+        $('#' + entry_field).val("[ButtonsTemplates-" + JSON.stringify(button_templates_page) + "] ").change();
+        alert('已送出！點擊關閉繼續。')
+    }
+    
 </script>
