@@ -365,14 +365,6 @@
 
     function on_button_templates_send(){
         save_current_button_templates_page()
-        // let j=4
-        // for(let i=0;i<j;i++){
-        //     if (button_templates_page[i].length == 0){
-        //         button_templates_page.splice(i, 1);
-        //         i -= 1;
-        //         j -= 1;
-        //     }
-        // }
         button_templates_page = button_templates_page.filter(button => button.length !== 0);
         if (button_templates_page.length <= 1){
             alert('請至少輸入兩頁！')

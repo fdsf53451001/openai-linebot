@@ -17,7 +17,7 @@ class ChatAnalyze:
         for chat_session in tqdm.tqdm(chat_sessions):
             data = self.db.load_chats_by_start_index_limit_time(chat_session[1], chat_session[2], 300)
             message_list = []
-            message_list.append({'role':'user','content':'你是一個情緒分析專家，請問你認為以下對話情緒如何？請只要使用「快樂、驚訝、恐懼、厭惡、憤怒、悲傷」其中一個詞回答我，如果沒有情緒則輸出平淡，格式為<情緒>---'})
+            message_list.append({'role':'user','content':'你是一個情緒分析專家，請問你認為以下對話情緒如何？請只要使用「快樂、驚訝、恐懼、厭惡、憤怒、悲傷」其中一個詞回答我，如果沒有情緒則輸出平淡，格式為<情緒> 明天竟然要補班 驚訝 ---'})
             for row in data:
                 if row[0]==0:
                     role = 'assistant'

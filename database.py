@@ -171,7 +171,7 @@ class database:
         story_id = str(story_id)
         parent_id = str(parent_id)
         type = str(type)
-        result = self.deal_sql_request('INSERT INTO Story_sentence (story_id,parent_id,type,output_or_condiction) VALUES ("'+story_id+'","'+parent_id+'","'+type+'","'+output_or_condiction+'")')
+        result = self.deal_sql_request('INSERT INTO Story_sentence (story_id,parent_id,type,output_or_condiction) VALUES ("'+story_id+'","'+parent_id+'","'+type+'",\''+output_or_condiction+'\')')
         if result==None: return None
         result = self.deal_sql_request('SELECT last_insert_rowid()')
         return result[0][0]
