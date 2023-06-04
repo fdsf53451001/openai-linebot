@@ -4,6 +4,7 @@ from flask import Flask, request, abort, render_template, redirect, url_for
 # from linebot.models import MessageEvent, TextMessage, TextSendMessage
 # from flask_ngrok import run_with_ngrok
 from flask_restful import Resource, Api
+from waitress import serve
 import os, sys
 import time
 import json
@@ -27,6 +28,7 @@ from ChatAnalyze import ChatAnalyze
 from Keyword import Keywords, Keyword
 from Setting import ChatSetting
 from SystemSetting import SystemSetting
+from SystemConfigAPI import SystemConfigAPI
 from Story import Story_name, Story_sentence
 from User import User
 from ImageAPI import ImageAPI
@@ -274,10 +276,11 @@ api.add_resource(SystemSetting, '/api/system_setting',resource_class_kwargs={'ap
 api.add_resource(ImageAPI, '/api/image/<string:filename>',resource_class_kwargs={'db':db,'apiHandler':apiHandler})
 api.add_resource(VideoAPI, '/api/video/<string:filename>',resource_class_kwargs={'db':db,'apiHandler':apiHandler})
 api.add_resource(VideoThumbnailAPI, '/api/video_thumbnail/<string:filename>',resource_class_kwargs={'db':db,'apiHandler':apiHandler})
+api.add_resource(SystemConfigAPI, '/api/system_config',resource_class_kwargs={'db':db,'apiHandler':apiHandler})
 
 if __name__ == "__main__":
-    # run_with_ngrok(app)
-    app.run(host='0.0.0.0',port=80,debug=False)
+    # app.run(host='0.0.0.0',port=80,debug=False)
     # app.run(host='0.0.0.0',port=443,ssl_context=('cert/cert.pem', 'cert/privkey.pem'))
+    serve(app, host='0.0.0.0', port=80)
 
     # talk_test()
