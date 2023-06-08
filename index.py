@@ -166,7 +166,8 @@ def talk_analyze():
         (sid,username) = user_config
     
     PASS_DATA = {'USER_NAME':username,
-                 'SID':sid
+                 'SID':sid,
+                 'GRAFANA_DOMAIN':argument.read_conf('system','grafana_domain')
                 }
     return render_template('talk_analyze.html',PASS_DATA=PASS_DATA)
 

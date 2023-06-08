@@ -131,7 +131,7 @@ class MessageHandler:
     def check_image_reply(self, msg) -> SendMessage:
         command_content = self.fetch_command_content(msg.text,'LoadImage')
         if command_content:
-            img_domain = self.argument.read_conf('system','system_domain')+'api/image/'
+            img_domain = self.argument.read_conf('system','system_domain')+'/api/image/'
             return ImageSendMessage(original_content_url = img_domain+msg.text[command_content[0]+11:command_content[1]],
                                     preview_image_url = img_domain+msg.text[command_content[0]+11:command_content[1]]
                                     )
@@ -140,8 +140,8 @@ class MessageHandler:
     def check_video_reply(self, msg) -> SendMessage:
         command_content = self.fetch_command_content(msg.text,'LoadVideo')
         if command_content:
-            video_domain = self.argument.read_conf('system','system_domain')+'api/video/'
-            video_thumbnail_domain = self.argument.read_conf('system','system_domain')+'api/video_thumbnail/'
+            video_domain = self.argument.read_conf('system','system_domain')+'/api/video/'
+            video_thumbnail_domain = self.argument.read_conf('system','system_domain')+'/api/video_thumbnail/'
 
             video_file_name = msg.text[command_content[0]+11:command_content[1]].split('.')[0]
             return VideoSendMessage(original_content_url = video_domain+msg.text[command_content[0]+11:command_content[1]],
@@ -257,7 +257,7 @@ class MessageHandler:
             actions.append(MessageAction(label=buttons_template_array['action3'], text=buttons_template_array['action3']))
         actions = None if not actions else actions
 
-        img_domain = self.argument.read_conf('system','system_domain')+'api/image/'
+        img_domain = self.argument.read_conf('system','system_domain')+'/api/image/'
 
         buttons_template = T(
             title = buttons_template_array['title'],
