@@ -7,7 +7,12 @@
 除了整合對話平台常見的關鍵字、劇本模式功能，還加入了Regex、外掛程式的功能，可以快速套用各項專案。
 並且可以串接openAI的gpt3.5, gpt4，達成智能對話功能。
 
+## 通過docker快速部署
+```
+docker build -t openai-linebot .
+docker run -it --rm --net=host openai-linebot
+```
+
 ## 目前已串接平台
 * line
-* discord
 
