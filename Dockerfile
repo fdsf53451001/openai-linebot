@@ -7,7 +7,7 @@ FROM python:3.11
 VOLUME ["/bot/data"]
 WORKDIR /bot
 
-COPY . .
+COPY ../.. .
 
 RUN pip3 install -r requirements.txt
 

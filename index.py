@@ -6,6 +6,7 @@ from flask import Flask, request, abort, render_template, redirect, url_for
 from flask_restful import Resource, Api
 from waitress import serve
 import os, sys
+import shutil
 import time
 import json
 from datetime import datetime
@@ -37,6 +38,15 @@ from VideoThumbnailAPI import VideoThumbnailAPI
 
 argument = Argument()
 
+def check_environment():
+    if not os.path.isfile('data/config.conf'):
+        shutil.copy('default/config.conf', 'data/config.conf')
+    
+    if not os.path.isfile(argument.read_conf('sqlite','db_path')):
+        shutil.copy('default/chat.db', argument.read_conf('sqlite','db_path'))
+        
+check_environment()
+
 # set threading lock prevent sqlite error
 db_lock = threading.Lock()
 db = database(argument.read_conf('sqlite','db_path'),db_lock)
@@ -56,9 +66,9 @@ if argument.read_conf('platform','line') == 'true':
     from chat_platform.line_platform import line_platform
     line = line_platform(argument, messageHandler)
 
-if argument.read_conf('platform','discord') == 'true':
-    from chat_platform.discord_platform import discord_platform
-    dc = discord_platform(argument, messageHandler)
+# if argument.read_conf('platform','discord') == 'true':
+#     from chat_platform.discord_platform import discord_platform
+#     dc = discord_platform(argument, messageHandler)
 
 app = Flask(__name__)
 api = Api(app)
@@ -266,7 +276,6 @@ def fix_logger_level():
     for logger in loggers:
         logger.setLevel(logging.WARNING)
 
-
 api.add_resource(Keywords, '/api/keywords',resource_class_kwargs={'db':db,'apiHandler':apiHandler})
 api.add_resource(Keyword, '/api/keyword/<string:keyword_id>',resource_class_kwargs={'db':db,'apiHandler':apiHandler})
 api.add_resource(ChatSetting, '/api/setting/chat/<string:key>',resource_class_kwargs={'apiHandler':apiHandler})
@@ -280,8 +289,15 @@ api.add_resource(VideoThumbnailAPI, '/api/video_thumbnail/<string:filename>',res
 api.add_resource(SystemConfigAPI, '/api/system_config',resource_class_kwargs={'db':db,'apiHandler':apiHandler})
 
 if __name__ == "__main__":
-    # app.run(host='0.0.0.0',port=80,debug=False)
-    # app.run(host='0.0.0.0',port=443,ssl_context=('cert/cert.pem', 'cert/privkey.pem'))
-    serve(app, host='0.0.0.0', port=80)
+    # local test will block command line, prevent web page to load
+    local_test = False
+    port = int(argument.read_conf('system','system_port'))
 
-    # talk_test()
+    if local_test:
+        talk_test()
+
+    elif argument.read_conf('system','use_local_certificates') == 'true':
+        app.run(host='0.0.0.0',port=port,ssl_context=('cert/cert.pem', 'cert/privkey.pem'))
+    else:
+        serve(app, host='0.0.0.0', port=port)
+

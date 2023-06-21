@@ -73,7 +73,7 @@ class MessageHandler:
         if reply_msg == None:
             reply_msg = TextSendMessage(text="所有對話引擎不可用，請檢查設定!")
             reply_mode = 0
-            logging.warning('all reply engine are disabled!')
+            logging.warning('no reply engine response!')
 
 
         logging.debug('reply to [%s] %s %s',platform_name,user_id,str(reply_msg))

@@ -1,0 +1,25 @@
+version: '2'
+services:
+  openai-linebot:
+    image: openai-linebot:latest
+    container_name: openai-linebot
+    ports:
+      - 80:80
+    volumes:
+      - shared-volume:/bot/data
+
+  grafana:
+    image: grafana/grafana-enterprise
+    container_name: grafana
+    ports:
+      - 8080:8080
+    volumes:
+      - ./data/grafana:/etc/grafana # TODO:這個結構怪怪的啦
+      - ./data/grafana:/var/lib/grafana
+      - shared-volume:/opt/grafana
+    environment:
+      - GF_INSTALL_PLUGINS=frser-sqlite-datasource, grafana-image-renderer
+    user: "472"
+
+volumes:
+  shared-volume:

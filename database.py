@@ -10,6 +10,7 @@ class database:
         self.db_lock = db_lock
 
     def deal_sql_request(self, command):
+        # TODO : 建議使用transaction重新改寫
         try:
             self.db_lock.acquire()
             self.c.execute(command)
