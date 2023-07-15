@@ -1,4 +1,4 @@
-# 如何构建: docker build -t REPO/openai-linebot .
+# 如何构建: docker build -t REPO/openai-linebot . -f ./docker/main/Dockerfile
 # 如何提交: docker push REPO/openai-linebot
 # 如何运行: docker create -it --net=host --restart always REPO/openai-linebot
 
@@ -7,7 +7,7 @@ FROM python:3.11
 VOLUME ["/bot/data"]
 WORKDIR /bot
 
-COPY ../.. .
+COPY . .
 
 RUN pip3 install -r requirements.txt
 

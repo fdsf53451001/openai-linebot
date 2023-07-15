@@ -2,3 +2,5 @@ cert/*
 data/*
 *.pyc
 resources/*
+helm/unused/*
+static/grafana/*

@@ -65,6 +65,7 @@ if argument.read_conf('openai','analyze_msg_with_openai') == 'true':
 if argument.read_conf('platform','line') == 'true':
     from chat_platform.line_platform import line_platform
     line = line_platform(argument, messageHandler)
+    # line.set_default_rich_menu('resources/image/56.jpg','resources/rich_menu/1.json')
 
 # if argument.read_conf('platform','discord') == 'true':
 #     from chat_platform.discord_platform import discord_platform
@@ -175,9 +176,13 @@ def talk_analyze():
     else:
         (sid,username) = user_config
     
+    if argument.read_conf('system','grafana_domain') != 'None':
+        ChatAnalyze.get_grafana_analyze_image(argument)
+
     PASS_DATA = {'USER_NAME':username,
                  'SID':sid,
-                 'GRAFANA_DOMAIN':argument.read_conf('system','grafana_domain')
+                 'GRAFANA_DOMAIN':argument.read_conf('system','grafana_domain'),
+                 'GRAFANA_IMAGE_AMOUNT':int(argument.read_conf('grafana','image_amount'))
                 }
     return render_template('talk_analyze.html',PASS_DATA=PASS_DATA)
 
@@ -293,9 +298,9 @@ if __name__ == "__main__":
     local_test = False
     port = int(argument.read_conf('system','system_port'))
 
+    print('SERVER START UP !')
     if local_test:
         talk_test()
-
     elif argument.read_conf('system','use_local_certificates') == 'true':
         app.run(host='0.0.0.0',port=port,ssl_context=('cert/cert.pem', 'cert/privkey.pem'))
     else:

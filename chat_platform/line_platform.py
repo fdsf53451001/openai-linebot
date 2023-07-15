@@ -1,6 +1,7 @@
 from linebot import LineBotApi, WebhookHandler
 from linebot.exceptions import InvalidSignatureError, LineBotApiError
-from linebot.models import MessageEvent, TextMessage, TextSendMessage
+from linebot.models import MessageEvent, TextMessage, TextSendMessage, RichMenu
+import json
 import logging
 
 class line_platform():
@@ -51,4 +52,20 @@ class line_platform():
         except LineBotApiError as e:
             logging.error('get_user_profile error %s',e)
             return None
-        
+    
+    def set_default_rich_menu(self, image_path, json_path):
+        try:
+            with open(json_path, 'r') as f:
+                rich_menu_json = json.load(f)
+            rich_menu = RichMenu.new_from_json_dict(rich_menu_json)
+            rich_menu_id = self.line_bot_api.create_rich_menu(rich_menu=rich_menu)
+            with open(image_path, 'rb') as f:
+                if image_path.endswith('.jpg') or image_path.endswith('.jpeg'):
+                    self.line_bot_api.set_rich_menu_image(rich_menu_id, 'image/jpeg', f)
+                elif image_path.endswith('.png'):
+                    self.line_bot_api.set_rich_menu_image(rich_menu_id, 'image/png', f)
+                else:
+                    raise Exception('image format not support')
+            self.line_bot_api.set_default_rich_menu(rich_menu_id)
+        except Exception as e:
+            logging.error('set default richmenu error %s',e)

@@ -1,0 +1,8 @@
+MainDeployment:
+  ServerPort: 80
+
+GrafanaDeployment:
+  ServerPort: 8080
+
+ExternelService:
+  ExternelPort: 30000

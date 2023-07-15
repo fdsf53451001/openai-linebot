@@ -9,5 +9,6 @@ import subprocess
 process = subprocess.Popen("sudo apt -y install ffmpeg", shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
 os.makedirs('resources/image', exist_ok=True)
+os.makedirs('static/grafana', exist_ok=True)
 os.makedirs('resources/video', exist_ok=True)
 os.makedirs('resources/video/img', exist_ok=True)

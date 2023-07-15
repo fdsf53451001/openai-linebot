@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: openai-linebot-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: openai-linebot-deployment
+  template:
+    metadata:
+      labels:
+        app: openai-linebot-deployment
+    spec:
+      containers:
+      - name: openai-linebot-pod
+        image: openai-linebot:latest
+        imagePullPolicy: Never
+        ports:
+        - containerPort: {{ .Values.MainDeployment.ServerPort }}
+        volumeMounts:
+        - name: volume-openai-linebot
+          mountPath: /data
+        env:
+        - name: SERVER_PORT
+          value: "{{ .Values.MainDeployment.ServerPort }}"
+        - name: GRAFANA_ADDRESS
+          valueFrom:
+            configMapKeyRef:
+              name: openai-linebot-configmap
+              key: grafana_url
+      volumes:
+        - name: volume-openai-linebot
+          persistentVolumeClaim:
+            claimName: pvc-openai-linebot

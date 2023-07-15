@@ -77,9 +77,9 @@ class MessageHandler:
 
 
         logging.debug('reply to [%s] %s %s',platform_name,user_id,str(reply_msg))
-        if reply_msg is TextSendMessage: # text message
+        if isinstance(reply_msg, TextSendMessage): # text message
             chatgpt_sentence_id = self.db.save_chat(user_id, int(time.time()*1000), 0, reply_msg.text)
-        else: # rich message
+        else: # other rich message
             chatgpt_sentence_id = self.db.save_chat(user_id, int(time.time()*1000), 0, str(reply_msg))
         self.db.save_reply(chatgpt_sentence_id, reply_mode, reply_rule)
         return reply_msg

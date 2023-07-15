@@ -1,9 +1,10 @@
 import configparser
+import os
 import json
 
 class Argument:
     def __init__(self):
-        self.config = configparser.ConfigParser()
+        self.config = configparser.SafeConfigParser(os.environ)
         self.openai_key = self.read_conf('key','openai_key')
         self.line_channel_access_token = self.read_conf('key','line_channel_access_token')
         self.line_channel_secret = self.read_conf('key','line_channel_secret')

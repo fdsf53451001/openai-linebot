@@ -1,0 +1,35 @@
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: grafana-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: grafana-deployment
+  template:
+    metadata:
+      labels:
+        app: grafana-deployment
+    spec:
+      securityContext:
+        runAsUser: 472
+        runAsGroup: 472
+        fsGroup: 472
+      containers:
+      - name: grafana-pod
+        image: openai-linebot-grafana
+        imagePullPolicy: Never
+        ports:
+        - containerPort: {{ .Values.GrafanaDeployment.ServerPort }}
+        volumeMounts:
+        - name: volume-openai-linebot
+          mountPath: /opt/grafana
+        env:
+        - name: GF_INSTALL_PLUGINS
+          value: "frser-sqlite-datasource, grafana-image-renderer"
+      volumes:
+        - name: volume-openai-linebot
+          persistentVolumeClaim:
+            claimName: pvc-openai-linebot

@@ -9,11 +9,14 @@ class database:
         self.c = self.conn.cursor()
         self.db_lock = db_lock
 
-    def deal_sql_request(self, command):
+    def deal_sql_request(self, command, params=None) -> list:
         # TODO : 建議使用transaction重新改寫
         try:
             self.db_lock.acquire()
-            self.c.execute(command)
+            if params:
+                self.c.execute(command, params)
+            else:
+                self.c.execute(command)
             result = self.c.fetchall()
             self.conn.commit()
         except sqlite3.Error as err:
@@ -27,13 +30,15 @@ class database:
 
     def save_chat(self, userId, time ,direction, text): # 0:AI ; 1:Human
         # print(userId, time , direction, text)
-        self.deal_sql_request('INSERT INTO Message (userId,time,direction,text) VALUES '+str((userId, time, direction, text)))
+        # self.deal_sql_request('INSERT INTO Message (userId,time,direction,text) VALUES '+str((userId, time, direction, text)))
+        self.deal_sql_request('INSERT INTO Message (userId,time,direction,text) VALUES (?, ?, ?, ?)', (userId, time, direction, text))
         result = self.deal_sql_request('SELECT last_insert_rowid()')
         return result[0][0]
     
     def save_reply(self, messageId, reply_mode, reply_rule):
         if reply_rule==None: reply_rule=''
-        self.deal_sql_request('INSERT INTO Message_reply (messageId,reply_mode,reply_rule) VALUES '+str((messageId, reply_mode, reply_rule)))
+        # self.deal_sql_request('INSERT INTO Message_reply (messageId,reply_mode,reply_rule) VALUES '+str((messageId, reply_mode, reply_rule)))
+        self.deal_sql_request('INSERT INTO Message_reply (messageId,reply_mode,reply_rule) VALUES (?, ?, ?)', (messageId, reply_mode, reply_rule))
 
     def search_message(self, messageId):
         result = self.deal_sql_request('SELECT text FROM Message WHERE messageId=='+str(messageId))

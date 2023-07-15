@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: openai-linebot-external-service
+spec:
+ selector:
+   app: openai-linebot-deployment
+ type: LoadBalancer
+ ports:
+   - protocol: TCP
+     port: {{ .Values.MainDeployment.ServerPort }}
+     targetPort: {{ .Values.MainDeployment.ServerPort }}
+     nodePort: {{ .Values.ExternelService.ExternelPort }}

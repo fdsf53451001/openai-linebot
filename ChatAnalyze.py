@@ -1,4 +1,9 @@
 import tqdm
+import requests
+import os
+import json
+import tqdm
+import logging
 
 class ChatAnalyze:
     def __init__(self, db, chatgpt):
@@ -40,3 +45,12 @@ class ChatAnalyze:
 
             # no response, leave the entry empty  
             
+    @staticmethod
+    def get_grafana_analyze_image(argument):
+        urls = json.loads(argument.read_conf('grafana','image_url'))
+        for i in tqdm.tqdm(range(int(argument.read_conf('grafana','image_amount'))),desc='Download Grafana Image'):
+            r=requests.get(argument.read_conf('system','grafana_domain')+urls[i])
+            if r.status_code != 200:
+                logging.error('Grafana Image Download Failed !')
+            with open('./static/grafana/'+str(i)+'.png','wb') as f:
+                f.write(r.content)

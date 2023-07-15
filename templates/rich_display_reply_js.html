@@ -373,5 +373,42 @@
         $('#' + entry_field).val("[ButtonsTemplates-" + JSON.stringify(button_templates_page) + "] ").change();
         alert('已送出！點擊關閉繼續。')
     }
+
+    function on_regex_save(){
+        let regex_value = $('#regex-input').val()
+        if (regex_value==""){
+            alert('請輸入正規表達式！')
+            return
+        }
+        regex_value = "[Regex-" + regex_value + "] "
+        let regex_variable_value = $('#regex-variable-input').val()
+        if (regex_variable_value!=""){
+            regex_value += " [SaveUserData-" + regex_variable_value + "] "
+        }
+        $('#' + entry_field).val(regex_value).change();
+        alert('已送出！點擊關閉繼續。')
+    }
+
+    function on_save_user_variable_save(){
+        let input_value = $('#save-user-variable-input').val()
+        if (input_value==""){
+            alert('請輸入變數名稱！')
+            return
+        }
+        input_value = "[SaveUserData-" + input_value + "] "
+        $('#' + entry_field).val(input_value).change();
+        alert('已送出！點擊關閉繼續。')
+    }
+
+    function on_load_user_variable_save(){
+        let input_value = $('#load-user-variable-input').val()
+        if (input_value==""){
+            alert('請輸入變數名稱！')
+            return
+        }
+        input_value = "[LoadUserData-" + input_value + "] "
+        $('#' + entry_field).val(input_value).change();
+        alert('已送出！點擊關閉繼續。')
+    }
     
 </script>
