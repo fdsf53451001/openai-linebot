@@ -14,7 +14,7 @@ import logging
 logging.basicConfig(
                     format='* %(asctime)s %(levelname)s %(message)s',
                     level=logging.WARN , 
-                    handlers=[logging.StreamHandler(), logging.FileHandler('data/system.log')]
+                    handlers=[logging.StreamHandler(), logging.FileHandler('data/system.log',delay=True)]
                     )
 import threading
 sys.path.append('data/')
@@ -36,16 +36,15 @@ from ImageAPI import ImageAPI
 from VideoAPI import VideoAPI
 from VideoThumbnailAPI import VideoThumbnailAPI
 
-argument = Argument()
-
 def check_environment():
     if not os.path.isfile('data/config.conf'):
         shutil.copy('default/config.conf', 'data/config.conf')
-    
+    argument = Argument()
     if not os.path.isfile(argument.read_conf('sqlite','db_path')):
         shutil.copy('default/chat.db', argument.read_conf('sqlite','db_path'))
-        
-check_environment()
+    return argument 
+
+argument = check_environment()
 
 # set threading lock prevent sqlite error
 db_lock = threading.Lock()
