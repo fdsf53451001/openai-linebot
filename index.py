@@ -55,7 +55,7 @@ argument = check_environment()
 db_lock = threading.Lock()
 db = database(argument.read_conf('sqlite','db_path'),db_lock)
 
-chatgpt = ChatGPT(db,argument.openai_key)
+chatgpt = ChatGPT(db,argument)
 messageHandler = MessageHandler(db,chatgpt)
 apiHandler = APIHandler(db)
 

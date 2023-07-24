@@ -6,8 +6,10 @@ from opencc import OpenCC
 # pip install opencc-python-reimplemented
 
 class ChatGPT:
-    def __init__(self,db,openai_key):
+    def __init__(self,db,argument):
         self.db = db
+        self.argument = argument
+
         self.model = os.getenv("OPENAI_MODEL", default = "text-davinci-003")
         self.cc = OpenCC('s2t')
         #self.model = os.getenv("OPENAI_MODEL", default = "chatbot")
@@ -15,12 +17,15 @@ class ChatGPT:
         self.frequency_penalty = float(os.getenv("OPENAI_FREQUENCY_PENALTY", default = 0))
         self.presence_penalty = float(os.getenv("OPENAI_PRESENCE_PENALTY", default = 0.6))
         self.max_tokens = int(os.getenv("OPENAI_MAX_TOKENS", default = 240))
-        openai.api_key = openai_key
+        openai.api_key = argument.openai_key
 
     def get_response(self, userId):
         message_list = []
         data = self.db.load_chat(userId)
-        # message_list.append({'role':'user','content':'以下請用繁體中文和英文回答'})
+
+        if self.argument.read_conf('openai','prompt_prefix') != 'None':
+            message_list.append({'role':'system','content':self.argument.read_conf('openai','prompt_prefix')})
+        
         for row in data:
             if row[0]==0:
                 role = 'assistant'
