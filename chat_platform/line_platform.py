@@ -53,7 +53,7 @@ class line_platform():
             logging.error('get_user_profile error %s',e)
             return None
     
-    def set_default_rich_menu(self, image_path, json_path):
+    def set_default_rich_menu(self, image_path, json_path) -> bool:
         try:
             with open(json_path, 'r') as f:
                 rich_menu_json = json.load(f)
@@ -65,7 +65,11 @@ class line_platform():
                 elif image_path.endswith('.png'):
                     self.line_bot_api.set_rich_menu_image(rich_menu_id, 'image/png', f)
                 else:
+                    logging.error('Line setup RichMenu Failed : image format not support.')
                     raise Exception('image format not support')
             self.line_bot_api.set_default_rich_menu(rich_menu_id)
+            return True
+        
         except Exception as e:
             logging.error('set default richmenu error %s',e)
+            return False

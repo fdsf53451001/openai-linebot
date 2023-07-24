@@ -35,8 +35,13 @@ from User import User
 from ImageAPI import ImageAPI
 from VideoAPI import VideoAPI
 from VideoThumbnailAPI import VideoThumbnailAPI
+from FileAPI import FileAPI
+from LineSetting import LineReachMenu
 
 def check_environment():
+    if not os.path.isfile('data/system.log'):
+        # create file
+        open('data/system.log', 'a').close()
     if not os.path.isfile('data/config.conf'):
         shutil.copy('default/config.conf', 'data/config.conf')
     argument = Argument()
@@ -214,14 +219,26 @@ def api_setting():
 
     PASS_DATA = {'USER_NAME':username,
                  'SID':sid,
-                 'DEFAULT_REPLY': "checked" if argument.read_conf('function','default_reply')=='true' else "",
-                 'DEFAULT_REPLY_WORD': argument.read_conf('function','default_reply_word'),
-                 'KEYWORD_REPLY': "checked" if argument.read_conf('function','keyword_reply')=='true' else "",
-                 'STORY_REPLY': "checked" if argument.read_conf('function','story_reply')=='true' else "",
-                 'CHATGPT_REPLY': "checked" if argument.read_conf('function','chatgpt_reply')=='true' else ""
+                #  'DEFAULT_REPLY': "checked" if argument.read_conf('function','default_reply')=='true' else "",
+                #  'DEFAULT_REPLY_WORD': argument.read_conf('function','default_reply_word'),
+                #  'KEYWORD_REPLY': "checked" if argument.read_conf('function','keyword_reply')=='true' else "",
+                #  'STORY_REPLY': "checked" if argument.read_conf('function','story_reply')=='true' else "",
+                #  'CHATGPT_REPLY': "checked" if argument.read_conf('function','chatgpt_reply')=='true' else ""
                 }
     return render_template('api_setting.html',PASS_DATA=PASS_DATA)
 
+@app.route('/line_setting')
+def line_setting():
+    user_config = apiHandler.check_request_username(request)
+    if not user_config:
+        return redirect(url_for('login'))
+    else:
+        (sid,username) = user_config
+
+    PASS_DATA = {'USER_NAME':username,
+                 'SID':sid,
+                }
+    return render_template('line_setting.html',PASS_DATA=PASS_DATA)
 
 @app.route('/story')
 def story():
@@ -291,6 +308,9 @@ api.add_resource(ImageAPI, '/api/image/<string:filename>',resource_class_kwargs=
 api.add_resource(VideoAPI, '/api/video/<string:filename>',resource_class_kwargs={'db':db,'apiHandler':apiHandler})
 api.add_resource(VideoThumbnailAPI, '/api/video_thumbnail/<string:filename>',resource_class_kwargs={'db':db,'apiHandler':apiHandler})
 api.add_resource(SystemConfigAPI, '/api/system_config',resource_class_kwargs={'db':db,'apiHandler':apiHandler})
+api.add_resource(FileAPI, '/api/file/<string:filename>',resource_class_kwargs={'db':db,'apiHandler':apiHandler})
+api.add_resource(LineReachMenu, '/api/line/rich_menu',resource_class_kwargs={'argument':argument,'apiHandler':apiHandler,'line_platform':line})
+
 
 if __name__ == "__main__":
     # local test will block command line, prevent web page to load
