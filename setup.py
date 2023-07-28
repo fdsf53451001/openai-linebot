@@ -13,4 +13,5 @@ os.makedirs('static/grafana', exist_ok=True)
 
 os.makedirs('resources/image', exist_ok=True)
 os.makedirs('resources/video', exist_ok=True)
+os.makedirs('resources/files', exist_ok=True)
 os.makedirs('resources/video/img', exist_ok=True)

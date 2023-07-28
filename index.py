@@ -323,5 +323,5 @@ if __name__ == "__main__":
     elif argument.read_conf('system','use_local_certificates') == 'true':
         app.run(host='0.0.0.0',port=port,ssl_context=('cert/cert.pem', 'cert/privkey.pem'))
     else:
-        serve(app, host='0.0.0.0', port=port)
+        serve(app, host='0.0.0.0', port=port, threads=10)
 
