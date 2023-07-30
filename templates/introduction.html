@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{%block PAGE_NAME%}ChatGPT - Introduction{%endblock%}
+
+{%block PAGEUP_SCRIPT%}
+<!-- Custom styles for this page -->
+<link href="{{url_for('static',filename='vendor/datatables/dataTables.bootstrap4.min.css')}}" rel="stylesheet">
+{%endblock%}
+
+{%block PAGE%}
+<div class="introduction">
+    <p>本網站為line bot，與openAI、其他大語言模型間的橋梁，提供傳統客服機器人的應答模式，或是大型語言模型的智慧型回答功能，並且可以分析對答內容。</p>
+    <img src="{{url_for('static',filename='img/platform_architecture.png')}}">
+    <p>根據應答的先後順序，可以分成</p>
+    <p>1.關鍵字模式 : 依據特定關鍵字，回答指定內容。例如最新消息。</p>
+    <p>2.劇本模式 : 劇本模式適用於複雜的、規則性的對話。例如掛號預約、科普功能。</p>
+    <p>3.外部程式 : 本平台可以導入自訂的python程式，並將執行結果傳送給使用者。例如查詢天氣。</p>
+    <p>4.大型語言模型 : 透過LLM產生相似於真人的回答，並通過提示詞(prompt)的設定，導引回答方向。例如心理輔導。</p>
+</div>
+
+{%endblock%}
+
+{%block PAGEDOWN_SCRIPT%}
+
+<!-- Bootstrap core JavaScript-->
+<script src="{{url_for('static',filename='vendor/jquery/jquery.min.js')}}"></script>
+<script src="{{url_for('static',filename='vendor/bootstrap/js/bootstrap.bundle.min.js')}}"></script>
+
+<!-- Core plugin JavaScript-->
+<script src="{{url_for('static',filename='vendor/jquery-easing/jquery.easing.min.js')}}"></script>
+
+{%endblock%}

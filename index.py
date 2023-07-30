@@ -144,6 +144,32 @@ def message_page():
                 }
     return render_template('message.html',PASS_DATA=PASS_DATA)
 
+@app.route('/introduction')
+def introduction():
+    user_config = apiHandler.check_request_username(request)
+    if not user_config:
+        return redirect(url_for('login'))
+    else:
+        (sid,username) = user_config
+    
+    PASS_DATA = {'USER_NAME':username,
+                 'SID':sid,
+                }
+    return render_template('introduction.html',PASS_DATA=PASS_DATA)
+
+@app.route('/openai_setting')
+def openai_setting():
+    user_config = apiHandler.check_request_username(request)
+    if not user_config:
+        return redirect(url_for('login'))
+    else:
+        (sid,username) = user_config
+    
+    PASS_DATA = {'USER_NAME':username,
+                 'SID':sid,
+                }
+    return render_template('openai_setting.html',PASS_DATA=PASS_DATA)
+
 @app.route('/qna')
 def qna():
     user_config = apiHandler.check_request_username(request)

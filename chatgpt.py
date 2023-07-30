@@ -10,13 +10,10 @@ class ChatGPT:
         self.db = db
         self.argument = argument
 
-        self.model = os.getenv("OPENAI_MODEL", default = "text-davinci-003")
         self.cc = OpenCC('s2t')
-        #self.model = os.getenv("OPENAI_MODEL", default = "chatbot")
-        self.temperature = float(os.getenv("OPENAI_TEMPERATURE", default = 0))
-        self.frequency_penalty = float(os.getenv("OPENAI_FREQUENCY_PENALTY", default = 0))
-        self.presence_penalty = float(os.getenv("OPENAI_PRESENCE_PENALTY", default = 0.6))
-        self.max_tokens = int(os.getenv("OPENAI_MAX_TOKENS", default = 240))
+        # self.frequency_penalty = float(os.getenv("OPENAI_FREQUENCY_PENALTY", default = 0))
+        # self.presence_penalty = float(os.getenv("OPENAI_PRESENCE_PENALTY", default = 0.6))
+        # self.max_tokens = int(os.getenv("OPENAI_MAX_TOKENS", default = 240))
         openai.api_key = argument.openai_key
 
     def get_response(self, userId):
@@ -39,7 +36,9 @@ class ChatGPT:
         try:
             logging.debug('send to openai %s',message_list[-1])
             response = openai.ChatCompletion.create(
-                model="gpt-3.5-turbo",
+                model=self.argument.read_conf('openai','model'),
+                temperature=float(self.argument.read_conf('openai','chat_temperature')),
+                max_tokens=int(self.argument.read_conf('openai','max_tokens')),
                 messages=message_list
                 )
 

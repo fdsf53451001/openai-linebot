@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{%block PAGE_NAME%}ChatGPT - OpenAI設定{%endblock%}
+
+{%block PAGEUP_SCRIPT%}
+<!-- Custom styles for this page -->
+<link href="{{url_for('static',filename='vendor/datatables/dataTables.bootstrap4.min.css')}}" rel="stylesheet">
+{%endblock%}
+
+{%block PAGE%}
+<!-- Page Heading -->
+<h1 class="h3 mb-2 text-gray-800">OpenAI對話設定</h1>
+<p class="mb-4">以下為如何設定OpenAI對話細節的說明。</p>
+
+<div class="introduction">
+    <p>點擊左方系統API設定，找到[openai]條目。</p>
+    <img src="{{url_for('static',filename='img/openai_setting.png')}}" style="width: 1024px;">
+    <hr>
+    <p>依照以下說明修改設定，並點擊右上方儲存。</p>
+    <p>1.model : 使用的openAI模型，可選gpt-3.5-turbo, gpt-4</p>
+    <p>2.chat_temperature : 回答溫度，越高越具有想像力</p>
+    <p>3.max_tokens : 最大回應字數</p>
+    <p>4.prompt_prefix : 銜接在對話前的語句，可以用來給bot附加設定，例如:"你是一個客服助手，你的目標是幫助客戶使用產品。"</p>
+</div>
+
+{%endblock%}
+
+{%block PAGEDOWN_SCRIPT%}
+
+<!-- Bootstrap core JavaScript-->
+<script src="{{url_for('static',filename='vendor/jquery/jquery.min.js')}}"></script>
+<script src="{{url_for('static',filename='vendor/bootstrap/js/bootstrap.bundle.min.js')}}"></script>
+
+<!-- Core plugin JavaScript-->
+<script src="{{url_for('static',filename='vendor/jquery-easing/jquery.easing.min.js')}}"></script>
+
+{%endblock%}
