@@ -37,9 +37,12 @@ class line_platform():
 
         reply_msg = self.messageHandler.handdle('line',user_id, receive_text, receive_timestamp)
 
-        self.line_bot_api.reply_message(
-                event.reply_token,
-                reply_msg)
+        try:
+            self.line_bot_api.reply_message(
+                    event.reply_token,
+                    reply_msg)
+        except LineBotApiError as e:
+            logging.error('line reply error %s',e)
 
     def send_to_user(self, user_id, message):
         if user_id=='testing': return

@@ -270,6 +270,10 @@
             alert('請至少輸入一個按鈕！')
             return
         }
+        if(submit_data['action1'].length>20 || submit_data['action2'].length>20 || submit_data['action3'].length>20){
+            alert('按鈕字數不能超過 20 個字！')
+            return
+        }
         if (submit_data['action2'] =='不需要此按鈕則不需修改'){
             delete submit_data['action2']
         }
