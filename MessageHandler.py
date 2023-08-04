@@ -5,6 +5,8 @@ import logging
 import json
 from typing import Tuple
 
+from service.llm.Flowise import Flowise
+
 from linebot.models import QuickReply
 from linebot.models import QuickReplyButton
 from linebot.models import MessageAction
@@ -22,6 +24,7 @@ class MessageHandler:
         self.argument = Argument()
         self.platforms = {}
         self.extrunner = ExternalCodeRunner()
+        self.flowise = Flowise(self.db, self.argument)
 
     def set_platform(self,platform_name,platform):
         self.platforms[platform_name] = platform
@@ -38,7 +41,7 @@ class MessageHandler:
 
         reply_msg = None
         (reply_mode,reply_rule) = (0,None)  
-        # 0=none, 1=default_reply, 2=keyword, 3=story, 4=chatgpt, 5=command
+        # 0=none, 1=default_reply, 2=keyword, 3=story, 4=chatgpt, 5=command, 6=flowise
 
         reply_msg = self.check_restart_command(user_id, receive_text)
         if reply_msg : reply_mode = 5
@@ -69,6 +72,11 @@ class MessageHandler:
         if self.argument.read_conf('function','chatgpt_reply') == 'true' and reply_msg == None:
             reply_msg = self.chatgpt_hold(platform_name,user_id)
             reply_mode = 4
+
+        if self.argument.read_conf('function','flowise_reply') == 'true' and reply_msg == None:
+            reply_msg = self.flowise.get_response(user_id)
+            reply_msg = TextSendMessage(text=reply_msg)
+            reply_mode = 6
 
         if reply_msg == None:
             reply_msg = TextSendMessage(text="所有對話引擎不可用，請檢查設定!")
@@ -267,7 +275,7 @@ class MessageHandler:
         )
         return buttons_template
 
-    def chatgpt_hold(self, platform_name, user_id):
+    def chatgpt_hold(self, platform_name, user_id) -> TextSendMessage:
         result = []
         thread = threading.Thread(target=self.chatgpt_handler, args=(platform_name,user_id,result))
         thread.start()

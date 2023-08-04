@@ -16,7 +16,7 @@ class ChatGPT:
         # self.max_tokens = int(os.getenv("OPENAI_MAX_TOKENS", default = 240))
         openai.api_key = argument.openai_key
 
-    def get_response(self, userId):
+    def get_response(self, userId) -> str:
         message_list = []
         data = self.db.load_chat(userId)
 
@@ -32,7 +32,7 @@ class ChatGPT:
         
         return self.send_to_openai(message_list)
 
-    def send_to_openai(self ,message_list):
+    def send_to_openai(self ,message_list) -> str:
         try:
             logging.debug('send to openai %s',message_list[-1])
             response = openai.ChatCompletion.create(

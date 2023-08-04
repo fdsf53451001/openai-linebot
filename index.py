@@ -18,25 +18,25 @@ logging.basicConfig(
                     )
 import threading
 sys.path.append('data/')
-sys.path.append('api/')
 from Argument import Argument
-from chatgpt import ChatGPT
-from database import database
+from Database import database
 from MessageHandler import MessageHandler
 from APIHandler import APIHandler
 from ChatAnalyze import ChatAnalyze
 
-from Keyword import Keywords, Keyword
-from Setting import ChatSetting
-from SystemSetting import SystemSetting
-from SystemConfigAPI import SystemConfigAPI
-from Story import Story_name, Story_sentence
-from User import User
-from ImageAPI import ImageAPI
-from VideoAPI import VideoAPI
-from VideoThumbnailAPI import VideoThumbnailAPI
-from FileAPI import FileAPI
-from LineSetting import LineReachMenu
+from service.llm.Chatgpt import ChatGPT
+
+from service.api.Keyword import Keywords, Keyword
+from service.api.Setting import ChatSetting
+from service.api.SystemSetting import SystemSetting
+from service.api.SystemConfigAPI import SystemConfigAPI
+from service.api.Story import Story_name, Story_sentence
+from service.api.User import User
+from service.api.ImageAPI import ImageAPI
+from service.api.VideoAPI import VideoAPI
+from service.api.VideoThumbnailAPI import VideoThumbnailAPI
+from service.api.FileAPI import FileAPI
+from service.api.LineSetting import LineReachMenu
 
 def check_environment():
     if not os.path.isfile('data/system.log'):
@@ -67,13 +67,8 @@ if argument.read_conf('openai','analyze_msg_with_openai') == 'true':
     chatAnalyze.analyze_with_openai()
 
 if argument.read_conf('platform','line') == 'true':
-    from chat_platform.line_platform import line_platform
+    from service.chat_platform.line_platform import line_platform
     line = line_platform(argument, messageHandler)
-    # line.set_default_rich_menu('resources/image/56.jpg','resources/rich_menu/1.json')
-
-# if argument.read_conf('platform','discord') == 'true':
-#     from chat_platform.discord_platform import discord_platform
-#     dc = discord_platform(argument, messageHandler)
 
 app = Flask(__name__)
 api = Api(app)

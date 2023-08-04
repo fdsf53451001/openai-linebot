@@ -16,7 +16,7 @@ class ExternalCodeRunner():
         logging.info('Running command: %s', command)
         result = None
         if command=='hello_world':
-            result = self.run('python3 custom_code/hello_world.py').decode()
+            result = self.run('python3 service/custom_code/hello_world.py').decode()
         else:
             result = '程式錯誤！'
             logging.error('command錯誤！指定程式不存在：'+command)
