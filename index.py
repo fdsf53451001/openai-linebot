@@ -38,15 +38,28 @@ from service.api.VideoThumbnailAPI import VideoThumbnailAPI
 from service.api.FileAPI import FileAPI
 from service.api.LineSetting import LineReachMenu
 
+'''
+init
+'''
+
 def check_environment():
+    # create log file
     if not os.path.isfile('data/system.log'):
-        # create file
         open('data/system.log', 'a').close()
+
+    # create config file
     if not os.path.isfile('data/config.conf'):
         shutil.copy('default/config.conf', 'data/config.conf')
     argument = Argument()
+
+    # create database file
     if not os.path.isfile(argument.read_conf('sqlite','db_path')):
         shutil.copy('default/chat.db', argument.read_conf('sqlite','db_path'))
+    
+    # check environmental variable
+    if os.environ.get('SYSTEM_PORT'):
+        argument.set_conf('system','system_port',os.environ.get('SYSTEM_PORT'))
+
     return argument 
 
 argument = check_environment()
@@ -69,6 +82,23 @@ if argument.read_conf('openai','analyze_msg_with_openai') == 'true':
 if argument.read_conf('platform','line') == 'true':
     from service.chat_platform.line_platform import line_platform
     line = line_platform(argument, messageHandler)
+else:
+    line = None
+
+# define platform information
+platform_info = {'PLATFORM_NAME':argument.read_conf('system','platform_name')}
+
+def talk_test():
+    while True:
+        user_id = 'command_line'
+        receive_text = input('text:')
+        receive_timestamp = int(time.time()*1000)
+        reply_msg = messageHandler.handdle('command_line',user_id, receive_text, receive_timestamp)
+        print('reply:',str(reply_msg))
+
+'''
+page definition
+'''
 
 app = Flask(__name__)
 api = Api(app)
@@ -77,6 +107,10 @@ api = Api(app)
 @app.route('/')
 def home():
     return redirect(url_for('login'))
+
+@app.route("/webhook", methods=['POST'])
+def callback():
+    return messageHandler.receive_request('line',request)
 
 @app.route('/index')
 def index():    
@@ -97,19 +131,8 @@ def index():
                  'USAGE_GRAPH_DATA':json.dumps(db.load_chat_amount_each_month()),
                  'SYSTEM_LOGS':db.load_system_logs()
                 }
+    PASS_DATA.update(platform_info)
     return render_template('index.html',PASS_DATA=PASS_DATA)
-
-@app.route("/webhook", methods=['POST'])
-def callback():
-    return messageHandler.receive_request('line',request)
-
-def talk_test():
-    while True:
-        user_id = 'command_line'
-        receive_text = input('text:')
-        receive_timestamp = int(time.time()*1000)
-        reply_msg = messageHandler.handdle('command_line',user_id, receive_text, receive_timestamp)
-        print('reply:',str(reply_msg))
 
 @app.route('/keyword')
 def keyword_page():
@@ -123,6 +146,7 @@ def keyword_page():
                  'SID':sid,
                  'KEYWORD_DATA':json.dumps(db.load_keyword())
                 }
+    PASS_DATA.update(platform_info)
     return render_template('keyword.html',PASS_DATA=PASS_DATA)
 
 @app.route('/message')
@@ -137,6 +161,7 @@ def message_page():
                  'SID':sid,
                  'MESSAGE_DATA':json.dumps(db.load_chat_deteil())
                 }
+    PASS_DATA.update(platform_info)
     return render_template('message.html',PASS_DATA=PASS_DATA)
 
 @app.route('/introduction')
@@ -150,6 +175,7 @@ def introduction():
     PASS_DATA = {'USER_NAME':username,
                  'SID':sid,
                 }
+    PASS_DATA.update(platform_info)
     return render_template('introduction.html',PASS_DATA=PASS_DATA)
 
 @app.route('/openai_setting')
@@ -163,6 +189,7 @@ def openai_setting():
     PASS_DATA = {'USER_NAME':username,
                  'SID':sid,
                 }
+    PASS_DATA.update(platform_info)
     return render_template('openai_setting.html',PASS_DATA=PASS_DATA)
 
 @app.route('/qna')
@@ -176,6 +203,7 @@ def qna():
     PASS_DATA = {'USER_NAME':username,
                  'SID':sid,
                 }
+    PASS_DATA.update(platform_info)
     return render_template('QNA.html',PASS_DATA=PASS_DATA)
 
 
@@ -191,6 +219,7 @@ def user_list():
                  'SID':sid,
                  'USERS_DATA':json.dumps(db.load_all_user())
                 }
+    PASS_DATA.update(platform_info)
     return render_template('user_list.html',PASS_DATA=PASS_DATA)
 
 @app.route('/talk_analyze')
@@ -209,6 +238,7 @@ def talk_analyze():
                  'GRAFANA_DOMAIN':argument.read_conf('system','grafana_domain'),
                  'GRAFANA_IMAGE_AMOUNT':int(argument.read_conf('grafana','image_amount'))
                 }
+    PASS_DATA.update(platform_info)
     return render_template('talk_analyze.html',PASS_DATA=PASS_DATA)
 
 
@@ -228,6 +258,7 @@ def reply_setting():
                  'STORY_REPLY': "checked" if argument.read_conf('function','story_reply')=='true' else "",
                  'CHATGPT_REPLY': "checked" if argument.read_conf('function','chatgpt_reply')=='true' else ""
                 }
+    PASS_DATA.update(platform_info)
     return render_template('reply_setting.html',PASS_DATA=PASS_DATA)
 
 @app.route('/api_setting')
@@ -246,6 +277,7 @@ def api_setting():
                 #  'STORY_REPLY': "checked" if argument.read_conf('function','story_reply')=='true' else "",
                 #  'CHATGPT_REPLY': "checked" if argument.read_conf('function','chatgpt_reply')=='true' else ""
                 }
+    PASS_DATA.update(platform_info)
     return render_template('api_setting.html',PASS_DATA=PASS_DATA)
 
 @app.route('/line_setting')
@@ -259,6 +291,7 @@ def line_setting():
     PASS_DATA = {'USER_NAME':username,
                  'SID':sid,
                 }
+    PASS_DATA.update(platform_info)
     return render_template('line_setting.html',PASS_DATA=PASS_DATA)
 
 @app.route('/story')
@@ -272,6 +305,7 @@ def story():
     PASS_DATA = {'USER_NAME':username,
                  'SID':sid
                 }
+    PASS_DATA.update(platform_info)
     return render_template('story.html',PASS_DATA=PASS_DATA)
 
 @app.route('/login')
@@ -293,7 +327,6 @@ def check_login():
         return render_template('login.html',ERROR_MSG="username or password error!")
 
 
-
 @app.route("/action", methods=['POST'])
 def action():
     return None
@@ -310,6 +343,7 @@ def page_not_found(error):
                  'SID':sid,
                  'KEYWORD_DATA':json.dumps(db.load_keyword())
                 }
+    PASS_DATA.update(platform_info)
     return render_template('404.html',PASS_DATA=PASS_DATA)  # 錯誤回傳
 
 def fix_logger_level():

@@ -32,6 +32,7 @@ services:
         - '3000:3000'
     volumes:
         - flowise-volume:/root/.flowise
+        - shared-volume:/bot/data
     command: /bin/sh -c "sleep 3; flowise start"
 
 volumes:
