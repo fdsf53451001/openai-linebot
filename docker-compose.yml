@@ -7,7 +7,7 @@ services:
     ports:
       - 80:80
     volumes:
-      - shared-volume:/bot/data
+      - ./data:/bot/data
 
   grafana:
     image: openai-linebot-grafana:latest
@@ -16,7 +16,7 @@ services:
     ports:
       - 8080:8080
     volumes:
-      - shared-volume:/opt/grafana
+      - ./data:/opt/grafana
     environment:
       - GF_INSTALL_PLUGINS=frser-sqlite-datasource, grafana-image-renderer
     user: "472"
@@ -31,10 +31,10 @@ services:
     ports:
         - '3000:3000'
     volumes:
-        - flowise-volume:/root/.flowise
-        - shared-volume:/bot/data
+        - ./data/flowise:/root/.flowise
+        - ./data:/bot/data
     command: /bin/sh -c "sleep 3; flowise start"
 
-volumes:
-  shared-volume:
-  flowise-volume:
+# volumes:
+#   shared-volume:
+#   flowise-volume:

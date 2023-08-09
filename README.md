@@ -26,3 +26,10 @@ docker-compose up --build
 ```
 docker-compose rm --volumes
 ```
+
+## 本地部屬
+```
+pip install -r requirements.txt
+python setup.py
+python main.py
+```
