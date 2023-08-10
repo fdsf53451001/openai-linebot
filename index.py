@@ -5,7 +5,7 @@ from flask import Flask, request, abort, render_template, redirect, url_for
 # from flask_ngrok import run_with_ngrok
 from flask_restful import Resource, Api
 from waitress import serve
-import os, sys
+import os, sys, subprocess
 import shutil
 import time
 import json
@@ -43,6 +43,9 @@ init
 '''
 
 def check_environment():
+    # set timezone to UTC+8
+    process = subprocess.Popen("sudo timedatectl set-timezone Asia/Taipei", shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
     # create log file
     if not os.path.isfile('data/system.log'):
         open('data/system.log', 'a').close()

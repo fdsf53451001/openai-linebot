@@ -8,9 +8,6 @@ import subprocess
 
 process = subprocess.Popen("sudo apt -y install ffmpeg", shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
-# set timezone to UTC+8
-process = subprocess.Popen("sudo timedatectl set-timezone Asia/Taipei", shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-
 os.makedirs('data', exist_ok=True)
 os.makedirs('data/flowise', exist_ok=True)
 
