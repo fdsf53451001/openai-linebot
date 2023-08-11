@@ -190,7 +190,7 @@ class MessageHandler:
     
     def story_hold(self, platform_name, user_id, receive_text):
         # node type : 0=entry, 1=fork, 2=condiction, 3=response 
-        last_reply_id = self.db.load_lest_reply_id(user_id)
+        last_reply_id = self.db.load_last_reply_id(user_id)
         if last_reply_id:
             (reply_mode, reply_rule) = self.db.check_reply_mode(last_reply_id)
             if reply_mode == 3:

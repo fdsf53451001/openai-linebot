@@ -162,7 +162,7 @@ def message_page():
     
     PASS_DATA = {'USER_NAME':username,
                  'SID':sid,
-                 'MESSAGE_DATA':json.dumps(db.load_chat_deteil())
+                 'MESSAGE_DATA':json.dumps(db.load_chat_detail())
                 }
     PASS_DATA.update(platform_info)
     return render_template('message.html',PASS_DATA=PASS_DATA)
