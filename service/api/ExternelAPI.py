@@ -1,4 +1,4 @@
-from flask_restful import Resource, request
+from flask_restx import Resource
 
 class ExternelAPI(Resource):
     """This API is use to provide externel API for outside service to use.

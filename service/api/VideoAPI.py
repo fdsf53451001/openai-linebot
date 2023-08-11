@@ -1,4 +1,5 @@
-from flask_restful import Resource, reqparse, request
+from flask_restx import Resource, reqparse
+from flask import request
 from flask import send_file
 import werkzeug
 import os

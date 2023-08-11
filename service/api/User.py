@@ -1,4 +1,5 @@
-from flask_restful import Resource, request
+from flask_restx import Resource
+from flask import request
 
 class User(Resource):
     def __init__(self,db,apiHandler):

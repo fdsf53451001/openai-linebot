@@ -3,7 +3,8 @@ from flask import Flask, request, abort, render_template, redirect, url_for
 # from linebot.exceptions import InvalidSignatureError
 # from linebot.models import MessageEvent, TextMessage, TextSendMessage
 # from flask_ngrok import run_with_ngrok
-from flask_restful import Resource, Api
+# from flask_restful import Resource, Api
+from flask_restx import Api, Resource
 from waitress import serve
 import os, sys, subprocess
 import shutil
@@ -104,7 +105,7 @@ page definition
 '''
 
 app = Flask(__name__)
-api = Api(app)
+api = Api(app, version='1.0', title='My API', description='A sample API', doc='/swagger')
 
 # domain root
 @app.route('/')
