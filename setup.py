@@ -10,6 +10,7 @@ process = subprocess.Popen("sudo apt -y install ffmpeg", shell=True, stdout=subp
 
 os.makedirs('data', exist_ok=True)
 os.makedirs('data/flowise', exist_ok=True)
+os.makedirs('data/cert', exist_ok=True)
 
 os.makedirs('static/grafana', exist_ok=True)
 

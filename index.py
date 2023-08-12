@@ -380,7 +380,7 @@ if __name__ == "__main__":
     if local_test:
         talk_test()
     elif argument.read_conf('system','use_local_certificates') == 'true':
-        app.run(host='0.0.0.0',port=port,ssl_context=('cert/cert.pem', 'cert/privkey.pem'))
+        app.run(host='0.0.0.0',port=port,ssl_context=('data/cert/cert.pem', 'data/cert/privkey.pem'))
     else:
         serve(app, host='0.0.0.0', port=port, threads=10)
 
