@@ -1,6 +1,6 @@
-docker-compose down
+sudo docker-compose down
 # git stash
 git pull
-docker build -t openai-linebot . -f ./docker/main/Dockerfile
-docker build -t openai-linebot-grafana . -f ./docker/grafana/Dockerfile
-docker-compose up -d
+sudo docker build -t openai-linebot . -f ./docker/main/Dockerfile
+sudo docker build -t openai-linebot-grafana . -f ./docker/grafana/Dockerfile
+sudo docker-compose up -d
