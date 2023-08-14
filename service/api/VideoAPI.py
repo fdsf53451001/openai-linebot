@@ -8,9 +8,9 @@ import logging
 from os import walk
 
 class VideoAPI(Resource):
-    def __init__(self,db,apiHandler):
-        self.db = db
-        self.apiHandler = apiHandler
+    def __init__(self, *args, **kwargs):
+        self.db = kwargs['db']
+        self.apiHandler = kwargs['apiHandler']
         self.baseURL = 'resources/video/'
         self.videoimgURL = self.baseURL + 'img/'
     

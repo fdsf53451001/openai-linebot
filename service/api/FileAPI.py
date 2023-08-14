@@ -3,9 +3,9 @@ from flask import send_file, request
 import werkzeug
 
 class FileAPI(Resource):
-    def __init__(self,db,apiHandler):
-        self.db = db
-        self.apiHandler = apiHandler
+    def __init__(self, *args, **kwargs):
+        self.db = kwargs['db']
+        self.apiHandler = kwargs['apiHandler']
         self.baseURL = 'resources/files/'
     
     def post(self,filename):

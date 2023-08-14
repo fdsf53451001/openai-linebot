@@ -3,9 +3,9 @@ from flask import request
 import json
 
 class Story_name(Resource):
-    def __init__(self,db,apiHandler):
-        self.db = db
-        self.apiHandler = apiHandler
+    def __init__(self, *args, **kwargs):
+        self.db = kwargs['db']
+        self.apiHandler = kwargs['apiHandler']
 
     def get(self):
         user_config = self.apiHandler.check_request_username(request)
@@ -16,9 +16,9 @@ class Story_name(Resource):
     
 
 class Story_sentence(Resource):
-    def __init__(self,db,apiHandler):
-        self.db = db
-        self.apiHandler = apiHandler
+    def __init__(self, *args, **kwargs):
+        self.db = kwargs['db']
+        self.apiHandler = kwargs['apiHandler']
 
     def get(self, story_id):
         user_config = self.apiHandler.check_request_username(request)

@@ -4,9 +4,9 @@ from flask import send_file
 import werkzeug
 
 class SystemConfigAPI(Resource):
-    def __init__(self,db,apiHandler):
-        self.db = db
-        self.apiHandler = apiHandler
+    def __init__(self, *args, **kwargs):
+        self.db = kwargs['db']
+        self.apiHandler = kwargs['apiHandler']
         self.configURL = 'data/config.conf'
     
     def post(self):

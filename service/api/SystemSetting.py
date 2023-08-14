@@ -4,10 +4,10 @@ from Argument import Argument
 import os, sys, psutil, logging
 
 class SystemSetting(Resource):
-    def __init__(self, apiHandler):
+    def __init__(self, *args, **kwargs):
         self.argument = Argument()
-        self.apiHandler = apiHandler
-        
+        self.apiHandler = kwargs['apiHandler']  
+              
     def get(self):
         user_config = self.apiHandler.check_request_username(request)
         if not user_config:

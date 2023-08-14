@@ -3,10 +3,10 @@ from flask import request
 import json
 
 class LineReachMenu(Resource):
-    def __init__(self,argument,apiHandler,line_platform):
-        self.argument = argument
-        self.apiHandler = apiHandler
-        self.line_platform = line_platform
+    def __init__(self, *args, **kwargs):
+        self.argument = kwargs['argument']
+        self.apiHandler = kwargs['apiHandler']
+        self.line_platform = kwargs['line_platform']
 
     # def get(self):
     #     return json.dumps({'richmenu_image':self.argument.read_conf('line','richmenu_image'),'richmenu_json':self.argument.read_conf('line','richmenu_json')})

@@ -7,9 +7,9 @@ import logging
 # import imghdr
 
 class VideoThumbnailAPI(Resource):
-    def __init__(self,db,apiHandler):
-        self.db = db
-        self.apiHandler = apiHandler
+    def __init__(self, *args, **kwargs):
+        self.db = kwargs['db']
+        self.apiHandler = kwargs['apiHandler']
         self.baseURL = 'resources/video/img/'
     
     def get(self, filename):

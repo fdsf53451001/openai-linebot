@@ -1,10 +1,10 @@
 from flask_restx import Resource
 from flask import request
 
-class Keywords(Resource):
-    def __init__(self,db,apiHandler):
-        self.db = db
-        self.apiHandler = apiHandler
+class Keywords(Resource):    
+    def __init__(self, *args, **kwargs):
+        self.db = kwargs['db']
+        self.apiHandler = kwargs['apiHandler']
 
     def get(self):
         return self.db.load_keyword()
@@ -24,10 +24,10 @@ class Keywords(Resource):
             return 'Bad Request',400
         return 'OK',200
 
-class Keyword(Resource):
-    def __init__(self,db,apiHandler):
-        self.db = db
-        self.apiHandler = apiHandler
+class Keyword(Resource):    
+    def __init__(self, *args, **kwargs):
+        self.db = kwargs['db']
+        self.apiHandler = kwargs['apiHandler']
 
     def delete(self,keyword_id):
         user_config = self.apiHandler.check_request_username(request)

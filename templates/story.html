@@ -3,15 +3,31 @@
 {%block PAGE_NAME%}ChatGPT - Reply Setting{%endblock%}
 
 {%block PAGEUP_SCRIPT%}
-
-
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<style>
+    .node circle {
+      stroke-width: 1.5px;
+    }
+  
+    .node text {
+      font: 12px sans-serif;
+      white-space: nowrap; /* Prevent text from wrapping */
+      overflow: hidden; /* Hide overflow text */
+      text-overflow: ellipsis; /* Show ellipsis for overflow text */
+    }
+  
+    .link {
+      fill: none;
+      stroke: #ccc;
+      stroke-width: 1.5px;
+    }
+</style>
 {%endblock%}
 
 {%block PAGE%}
 <h1 class="h3 mb-2 text-gray-800">劇本模式</h1>
-<p class="mb-4">劇本模式支持正規表達式，請輸入"[Regex-表達式內容]"。支持自定義程式執行，請輸出"[ExtCode-程式]"。支持儲存使用者輸入的內容，請在選項節點輸入"[SaveUserData-資料名稱]"。支持輸出使用者儲存的內容，請輸出"[LoadUserData-資料名稱]"。</p>
-<p class="mb-4">請參考<a href="https://transbiz.com.tw/regex-regular-expression-ga-%E6%AD%A3%E8%A6%8F%E8%A1%A8%E7%A4%BA%E5%BC%8F" target="_blank">Regex規則</a>。為了系統穩定，請使用<a href="https://www.regextester.com" target="_blank">外部網站測試Regex</a>，再填入本系統。</p>
-<p class="mb-4">由於程式限制，上述指令結尾請加一個空白。Ex. "[Regex...] "</p>
+<!-- <p class="mb-4">劇本模式支持正規表達式，請輸入"[Regex-表達式內容]"。支持自定義程式執行，請輸出"[ExtCode-程式]"。支持儲存使用者輸入的內容，請在選項節點輸入"[SaveUserData-資料名稱]"。支持輸出使用者儲存的內容，請輸出"[LoadUserData-資料名稱]"。</p>
+<p class="mb-4">由於程式限制，上述指令結尾請加一個空白。Ex. "[Regex...] "</p> -->
 
 <div class="row">
     <div class="col-2">
@@ -36,6 +52,8 @@
                 </div>
             </div>
             <div class="card-body input-group input-group-sm">
+                <!-- tree graph object -->
+                <svg width="0" height="0"></svg>
                 <div class="table-responsive">
                     <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
                         <thead>
@@ -136,7 +154,8 @@
             success: function (data) {
                 data = JSON.parse(data)
                 story_content = data
-                show_story_content()           
+                show_story_content()
+                update_graph(story_content)          
             },
             error: function (err) {
                 alert(err.responseText);
@@ -146,6 +165,7 @@
         $('#story_name_container').empty()
         $('#story_name_container').append('<input type="text" id="input-story-name" class="form-control form-control-sm" aria-describedby="inputGroup-sizing-sm" style="width: 200px;" value="'+story_name+'">\
                                             <div style="margin-left:auto;">\
+                                                <button type="button" id="input-send" class="btn btn-primary btn-sm" onclick="update_graph(story_content)">測試</button> \
                                                 <button type="button" id="input-send" class="btn btn-primary btn-sm" onclick="save_story('+story_id+')">儲存</button> \
                                                 <button type="button" id="input-send" class="btn btn-danger btn-sm" onclick="delete_story('+story_id+')">刪除</button> \
                                             </div>\
@@ -159,10 +179,12 @@
     function create_new_story(){
         clear_story_sentence_display()
         story_content = [[0,0,0,"請輸入觸發條件"]]
+        update_graph(story_content)
         show_story_content()
         $('#story_name_container').empty()
         $('#story_name_container').append('<input type="text" id="input-story-name" class="form-control form-control-sm" aria-describedby="inputGroup-sizing-sm" style="width: 200px;" value="'+'請輸入劇本名稱'+'">\
                                             <div style="margin-left:auto;">\
+                                                <button type="button" id="input-send" class="btn btn-primary btn-sm" onclick="update_graph(story_content)">測試</button> \
                                                 <button type="button" id="input-send" class="btn btn-primary btn-sm" onclick="save_story(0)">儲存</button> \
                                                 <button type="button" id="input-send" class="btn btn-danger btn-sm" onclick="delete_story(0)">刪除</button> \
                                             </div>\
@@ -309,6 +331,113 @@
                 alert(data)
             }
         });
+    }
+
+    // draw tree graph
+
+    function processData(data) {
+      try {
+        const map = new Map();
+        data.forEach(item => {
+          const [id, parentId, type, content] = item;
+          map.set(id, { id, parentId, type, content, children: [] });
+        });
+        map.forEach(item => {
+          if (item.parentId != 0) {
+            map.get(parseInt(item.parentId)).children.push(item);
+          }else if(item.type != 0){
+            // new story
+            map.get(0).children.push(item);
+          }
+        });
+        const rootId = findRootId(map);
+        return [map.get(rootId)];
+      } catch (error) {
+        return null;
+      }
+    }
+
+    function findRootId(map) {
+      let minId = Infinity;
+      map.forEach(item => {
+        if (parseInt(item.id) < minId) {
+          minId = parseInt(item.id);
+        }
+      });
+      return minId;
+    }
+
+    function truncateText(text, maxLength) {
+        return text.length > maxLength ? text.substring(0, maxLength) + "..." : text;
+    }
+
+    function displayErrorMessage(message) {
+    const svg = d3.select("svg");
+    svg.append("text")
+        .attr("x", 10)
+        .attr("y", 20)
+        .text(message)
+        .style("font-size", "16px")
+        .style("fill", "red");
+    }
+
+    function update_graph(data){
+        // 清空畫布
+        d3.select("svg").selectAll("*").remove();
+
+        const treeData = processData(data);
+
+        if (!treeData) {
+            displayErrorMessage("數據錯誤，請檢查以下節點資訊。切勿直接儲存，以免系統錯誤!");
+        } else {
+            const width = 720;
+            const height = 240;
+
+            const colorScale = d3.scaleOrdinal(d3.schemeCategory10); // Color scale for different types
+
+            const svg = d3.select("svg")
+                .attr("width", width)
+                .attr("height", height);
+
+            const tree = d3.tree()
+                .size([height-100, width-100])
+                .separation((a, b) => (a.parent == b.parent ? 1 : 2) / a.depth);
+
+            const root = d3.hierarchy(treeData[0]);
+
+            const treeLayout = tree(root);
+
+            const g = svg.append("g")
+                .attr("transform", "translate(50,50)");
+
+            const link = g.selectAll(".link")
+                .data(treeLayout.links())
+                .enter().append("path")
+                .attr("class", "link")
+                .attr("d", d => `
+                M${d.source.y},${d.source.x}
+                C${(d.source.y + d.target.y) / 2},${d.source.x}
+                ${(d.source.y + d.target.y) / 2},${d.target.x}
+                ${d.target.y},${d.target.x}
+                `);
+
+            const node = g.selectAll(".node")
+                .data(treeLayout.descendants())
+                .enter().append("g")
+                .attr("class", "node")
+                .attr("transform", d => `translate(${d.y},${d.x})`);
+
+            node.append("circle")
+                .attr("r", 6) // Adjust circle size
+                .style("fill", d => colorScale(d.data.type)); // Use color scale for fill color
+
+            node.append("text")
+                .attr("dy", "0.31em")
+                .attr("x", d => d.children ? -13 : 13)
+                .attr("y", d => d.children ? -13 : 13) // Shift text position for non-leaf nodes
+                .attr("text-anchor", d => d.children ? "end" : "start")
+                .text(d => truncateText(d.data.content, 10)); // Truncate text if longer than 10 characters
+        }
     }
 
     get_story_name()
