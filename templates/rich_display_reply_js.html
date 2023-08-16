@@ -404,6 +404,18 @@
         alert('已送出！點擊關閉繼續。')
     }
 
+    function on_set_user_variable_save(){
+        let input_variable = $('#set-user-variable-input').val()
+        let input_value = $('#set-user-value-input').val()
+        if (input_value=="" || input_variable==""){
+            alert('請輸入變數名稱及變數值！')
+            return
+        }
+        let result = "[SetUserData-" + input_variable + "=" + input_value + "] "
+        $('#' + entry_field).val(result).change();
+        alert('已送出！點擊關閉繼續。')
+    }
+
     function on_load_user_variable_save(){
         let input_value = $('#load-user-variable-input').val()
         if (input_value==""){

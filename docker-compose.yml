@@ -2,7 +2,6 @@ version: '2'
 services:
   openai-linebot:
     image: openai-linebot:latest
-    pull_policy : never
     container_name: openai-linebot
     ports:
       - 80:80
@@ -11,7 +10,6 @@ services:
 
   grafana:
     image: openai-linebot-grafana:latest
-    pull_policy : never
     container_name: grafana
     ports:
       - 8080:8080

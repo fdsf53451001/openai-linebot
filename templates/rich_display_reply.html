@@ -20,6 +20,9 @@
                 <button type="button" class="btn btn-outline-primary btn-sm" onmousedown="toggle_reply_mode('save_user_variable')">
                     儲存使用者資料
                 </button>
+                <button type="button" class="btn btn-outline-primary btn-sm" onmousedown="toggle_reply_mode('set_user_variable')">
+                    設定使用者資料
+                </button>
                 <br/>
                 <a>輸出</a>
                 <button type="button" class="btn btn-outline-primary btn-sm" onmousedown="toggle_reply_mode('image')">
@@ -67,6 +70,19 @@
                     <input id="save-user-variable-input" type="text" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-save-user-variable">
                 </div>
                 <button type="button" class="btn btn-primary btn-sm"  style="margin-left: 10px;" onclick="on_save_user_variable_save()">儲存</button>
+            </div>
+
+            <div id="set_user_variable_reply_content" class="reply_content">
+                <h3>Set User Variable</h3>
+                <div class="input-group mb-3">
+                    <span class="input-group-text" id="inputGroup-set-user-variable">Variable</span>
+                    <input id="set-user-variable-input" type="text" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-save-user-variable">
+                </div>
+                <div class="input-group mb-3">
+                    <span class="input-group-text" id="inputGroup-set-user-value">Value</span>
+                    <input id="set-user-value-input" type="text" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-set-user-value">
+                </div>
+                <button type="button" class="btn btn-primary btn-sm"  style="margin-left: 10px;" onclick="on_set_user_variable_save()">儲存</button>
             </div>
 
             <div id="load_user_variable_reply_content" class="reply_content">

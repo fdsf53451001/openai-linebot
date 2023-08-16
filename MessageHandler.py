@@ -158,6 +158,10 @@ class MessageHandler:
         return msg
 
     def check_input_rule(self, user_id, rule, receive_text):
+        '''
+        rule : admin defined rule to check this receive_rule
+        receive_text : input from user
+        '''
         match = False
         
         command_content = self.fetch_command_content(rule,'Regex')
@@ -169,6 +173,16 @@ class MessageHandler:
         command_content = self.fetch_command_content(rule,'SaveUserData')
         if command_content: # match save data
             self.db.add_user_extra_data(user_id, command_content[2], receive_text)
+            match = True
+
+        command_content = self.fetch_command_content(rule,'SetUserData')
+        if command_content: # match save data
+            try:
+                input_variable = command_content[2].split('=')[0]
+                input_value = command_content[2].split('=')[1]
+            except:
+                logging.error('Error Format in SetUserData : '+command_content[2])
+            self.db.add_user_extra_data(user_id, input_variable, input_value)
             match = True
 
         if rule in receive_text: # match word
