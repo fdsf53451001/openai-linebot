@@ -59,7 +59,6 @@ class Story_sentence(Resource):
                 if str(story_content[j][1]) == str(story_content[i][0]):
                     story_content[j][1] = sentencce_id
 
-
     def delete_story(self, story_id):
         self.db.delete_storyname_id(story_id)
         self.db.delete_storysentence_id(story_id)

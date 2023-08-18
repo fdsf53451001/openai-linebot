@@ -7,12 +7,6 @@ class ChatSetting(Resource):
         self.argument = Argument()
         self.apiHandler = kwargs['apiHandler']
         
-    # def get(self,key):
-    #     user_config = self.apiHandler.check_request_username(request)
-    #     if not user_config:
-    #         return 'Not Authorized',401
-    #     return self.argument.read_conf('function',key)
-    
     def post(self,key):
         user_config = self.apiHandler.check_request_username(request)
         if not user_config:

@@ -8,7 +8,7 @@ class Keywords(Resource):
 
     def get(self):
         return self.db.load_keyword()
-    
+
     def post(self):
         user_config = self.apiHandler.check_request_username(request)
         if not user_config:

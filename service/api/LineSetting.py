@@ -8,9 +8,6 @@ class LineReachMenu(Resource):
         self.apiHandler = kwargs['apiHandler']
         self.line_platform = kwargs['line_platform']
 
-    # def get(self):
-    #     return json.dumps({'richmenu_image':self.argument.read_conf('line','richmenu_image'),'richmenu_json':self.argument.read_conf('line','richmenu_json')})
-    
     def post(self):
         user_config = self.apiHandler.check_request_username(request)
         if not user_config:
