@@ -427,4 +427,20 @@
         alert('已送出！點擊關閉繼續。')
     }
     
+    function on_set_user_variable_richmenu(){
+        document.getElementById("set-user-variable-input").value = "RichMenuID";
+        document.getElementById("set-user-value-input").value = "1, 2, or 3";
+    }
+
+    function on_save_external_code(){
+        let input_value = $('#external-code-name-input').val()
+        if (input_value==""){
+            alert('請輸入函數名稱！')
+            return
+        }
+        input_value = "[ExtCode-" + input_value + "] "
+        $('#' + entry_field).val(input_value).change();
+        alert('已送出！點擊關閉繼續。')
+    }
+
 </script>

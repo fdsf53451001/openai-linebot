@@ -35,6 +35,8 @@ from service.llm.Chatgpt import ChatGPT
 # from service.api.FileAPI import FileAPI
 # from service.api.LineSetting import LineReachMenu
 
+BUILD_VERSION = 'v20230821'
+
 '''
 init
 '''
@@ -86,15 +88,10 @@ else:
     line = None
 
 # define platform information
-platform_info = {'PLATFORM_NAME':argument.read_conf('system','platform_name')}
-
-def talk_test():
-    while True:
-        user_id = 'command_line'
-        receive_text = input('text:')
-        receive_timestamp = int(time.time()*1000)
-        reply_msg = messageHandler.handdle('command_line',user_id, receive_text, receive_timestamp)
-        print('reply:',str(reply_msg))
+platform_info = {
+    'PLATFORM_NAME':argument.read_conf('system','platform_name'),
+    'BUILD_VERSION':BUILD_VERSION,
+}
 
 '''
 page definition
@@ -513,8 +510,10 @@ class LineReachMenu(Resource):
 
     @api.doc(params={'sid':'sid'})
     @api.expect(api.model('LineReachMenu', {
+        'richmenu_id': fields.String(required=True),
         'richmenu_image': fields.String(required=True, description='use ImageAPI first, return filepath here.'),
         'richmenu_json': fields.String(required=True),
+        "set_default": fields.String(required=True, default='0'),
     }))
     def post(self):
         user_config = self.apiHandler.check_request_username(request)
@@ -525,12 +524,20 @@ class LineReachMenu(Resource):
             if request_argument['richmenu_image']=='' or request_argument['richmenu_json']=='':
                 return 'Bad Request',400
 
+            richmenu_id = int(request_argument['richmenu_id'])
             richmenu_image = 'resources/image/' + request_argument['richmenu_image']
             richmenu_json = 'resources/files/' + request_argument['richmenu_json']
-            status = self.line_platform.set_default_rich_menu(richmenu_image,richmenu_json)
-            if not status: return 'Bad Request',400
-            self.argument.set_conf('line','richmenu_image',request_argument['richmenu_image'])
-            self.argument.set_conf('line','richmenu_json',request_argument['richmenu_json'])
+            menu_id = self.line_platform.upload_rich_menu(richmenu_image,richmenu_json)
+
+            if not menu_id: # upload rich menu failed
+                return 'Bad Request',400
+
+            if int(request_argument['set_default'])==1:
+                self.line_platform.set_default_rich_menu(menu_id)
+
+            self.argument.set_conf('line','richmenu_image_'+str(richmenu_id),request_argument['richmenu_image'])
+            self.argument.set_conf('line','richmenu_json_'+str(richmenu_id),request_argument['richmenu_json'])
+            self.argument.set_conf('line','richmenu_id_'+str(richmenu_id),menu_id)
             return 'OK',200
         
         except KeyError:
@@ -833,14 +840,9 @@ disabled api
 # api.add_resource(ChatSetting, '/api/setting/chat/<string:key>',resource_class_kwargs={'apiHandler':apiHandler})
 
 if __name__ == "__main__":
-    # local test will block command line, prevent web page to load
-    local_test = False
     port = int(argument.read_conf('system','system_port'))
-
     print('SERVER START UP !')
-    if local_test:
-        talk_test()
-    elif argument.read_conf('system','use_local_certificates') == 'true':
+    if argument.read_conf('system','use_local_certificates') == 'true':
         app.run(host='0.0.0.0',port=port,ssl_context=('data/cert/cert.pem', 'data/cert/privkey.pem'))
     else:
         serve(app, host='0.0.0.0', port=port, threads=10)

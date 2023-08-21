@@ -56,7 +56,7 @@ class line_platform():
             logging.error('get_user_profile error %s',e)
             return None
     
-    def set_default_rich_menu(self, image_path, json_path) -> bool:
+    def upload_rich_menu(self, image_path, json_path) -> str:
         try:
             with open(json_path, 'r') as f:
                 rich_menu_json = json.load(f)
@@ -70,9 +70,24 @@ class line_platform():
                 else:
                     logging.error('Line setup RichMenu Failed : image format not support.')
                     raise Exception('image format not support')
-            self.line_bot_api.set_default_rich_menu(rich_menu_id)
-            return True
+            return rich_menu_id
         
         except Exception as e:
-            logging.error('set default richmenu error %s',e)
+            logging.error('upload richmenu error %s',e)
             return False
+    
+    def set_default_rich_menu(self, rich_menu_id:str):
+        try:
+            self.line_bot_api.set_default_rich_menu(rich_menu_id)
+            return True
+        except LineBotApiError as e:
+            logging.error('set default richmenu error %s',e)
+
+    def set_richmenu_for_user(self, user_id:str, rich_menu_id:str):
+        try:
+            self.line_bot_api.link_rich_menu_to_user(user_id, rich_menu_id)
+
+            print("Rich Menu successfully set for the user!")
+
+        except LineBotApiError as e:
+            logging.error('set user richmenu error %s',e)

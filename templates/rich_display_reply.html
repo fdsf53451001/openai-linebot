@@ -13,36 +13,44 @@
         <div class="modal-body">
             <p>關於回覆模式，請參考<a href="https://developers.line.biz/en/docs/messaging-api/message-types/" target="_BLANK">LINE官方網頁</a></p>
             <div style="display: inline-block;">
-                <a>選項</a>
-                <button type="button" class="btn btn-outline-primary btn-sm" onmousedown="toggle_reply_mode('regex')">
-                    Regex
-                </button>
-                <button type="button" class="btn btn-outline-primary btn-sm" onmousedown="toggle_reply_mode('save_user_variable')">
-                    儲存使用者資料
-                </button>
-                <button type="button" class="btn btn-outline-primary btn-sm" onmousedown="toggle_reply_mode('set_user_variable')">
-                    設定使用者資料
-                </button>
+                <a>關鍵字</a>
+                    <button type="button" class="btn btn-outline-primary btn-sm" onmousedown="toggle_reply_mode('regex')">
+                        Regex
+                    </button>                    
                 <br/>
-                <a>輸出</a>
-                <button type="button" class="btn btn-outline-primary btn-sm" onmousedown="toggle_reply_mode('image')">
-                    Image
-                </button>
-                <!-- <button type="button" class="btn btn-outline-primary btn-sm" onmousedown="toggle_reply_mode('audio')">
-                    Audio
-                </button> -->
-                <button type="button" class="btn btn-outline-primary btn-sm" onmousedown="toggle_reply_mode('video')">
-                    Video
-                </button>
-                <button type="button" class="btn btn-outline-primary btn-sm" onmousedown="toggle_reply_mode('buttons_template')">
-                    Buttons Template
-                </button>
-                <button type="button" class="btn btn-outline-primary btn-sm" onmousedown="toggle_reply_mode('buttons_templates')">
-                    Buttons Templates
-                </button>
-                <button type="button" class="btn btn-outline-primary btn-sm" onmousedown="toggle_reply_mode('load_user_variable')">
-                    讀取使用者資料
-                </button>
+                <a>劇本選項</a>
+                    <button type="button" class="btn btn-outline-primary btn-sm" onmousedown="toggle_reply_mode('regex')">
+                        Regex
+                    </button>
+                    <button type="button" class="btn btn-outline-primary btn-sm" onmousedown="toggle_reply_mode('save_user_variable')">
+                        儲存使用者資料
+                    </button>
+                    <button type="button" class="btn btn-outline-primary btn-sm" onmousedown="toggle_reply_mode('set_user_variable')">
+                        設定使用者資料
+                    </button>
+                <br/>
+                <a>關鍵字/劇本輸出</a>
+                    <button type="button" class="btn btn-outline-primary btn-sm" onmousedown="toggle_reply_mode('image')">
+                        Image
+                    </button>
+                    <!-- <button type="button" class="btn btn-outline-primary btn-sm" onmousedown="toggle_reply_mode('audio')">
+                        Audio
+                    </button> -->
+                    <button type="button" class="btn btn-outline-primary btn-sm" onmousedown="toggle_reply_mode('video')">
+                        Video
+                    </button>
+                    <button type="button" class="btn btn-outline-primary btn-sm" onmousedown="toggle_reply_mode('buttons_template')">
+                        Buttons Template
+                    </button>
+                    <button type="button" class="btn btn-outline-primary btn-sm" onmousedown="toggle_reply_mode('buttons_templates')">
+                        Buttons Templates
+                    </button>
+                    <button type="button" class="btn btn-outline-primary btn-sm" onmousedown="toggle_reply_mode('load_user_variable')">
+                        讀取使用者資料
+                    </button>
+                    <button type="button" class="btn btn-outline-primary btn-sm" onmousedown="toggle_reply_mode('external_code')">
+                        執行外部程式
+                    </button>
             </div>
             <hr/>
             <!-- content -->
@@ -58,9 +66,16 @@
                     <span class="input-group-text" id="inputGroup-regex-variable">變數名稱</span>
                     <input id="regex-variable-input" type="text" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-regex-variable">
                 </div>
-                <p>請注意！此功能僅限劇本模式！</p>
-                <p>在關鍵字模式中，請在左方輸入[Regex-內容] ，右方輸入[SaveUserData-名稱] 。</p>
                 <button type="button" id="buttons-regex-save" class="btn btn-primary btn-sm"  style="margin-left: 10px;" onclick="on_regex_save()">儲存</button>
+            </div>
+
+            <div id="external_code_reply_content" class="reply_content">
+                <h3>Run External Code</h3>
+                <div class="input-group mb-3">
+                    <span class="input-group-text" id="inputGroup-save-user-variable">External Code Name</span>
+                    <input id="external-code-name-input" type="text" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-save-user-variable">
+                </div>
+                <button type="button" class="btn btn-primary btn-sm"  style="margin-left: 10px;" onclick="on_save_external_code()">儲存</button>
             </div>
 
             <div id="save_user_variable_reply_content" class="reply_content">
@@ -74,6 +89,13 @@
 
             <div id="set_user_variable_reply_content" class="reply_content">
                 <h3>Set User Variable</h3>
+                <div style="display: inline-block;">
+                    <a>功能變數</a>
+                    <button type="button" class="btn btn-outline-primary btn-sm" onmousedown="on_set_user_variable_richmenu()">
+                        設定RichMenu
+                    </button>
+                </div>
+                <hr/>
                 <div class="input-group mb-3">
                     <span class="input-group-text" id="inputGroup-set-user-variable">Variable</span>
                     <input id="set-user-variable-input" type="text" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-save-user-variable">

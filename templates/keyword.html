@@ -10,9 +10,9 @@
 {%block PAGE%}
 <!-- Page Heading -->
 <h1 class="h3 mb-2 text-gray-800">關鍵字應答模式</h1>
-<p class="mb-4">關鍵字模式支持正規表達式，請輸入"[Regex-表達式內容]"。支持自定義程式執行，請輸出"[ExtCode-程式]"。支持輸出使用者儲存的內容，請輸出"[LoadUserData-資料名稱]"。</p>
+<!-- <p class="mb-4">關鍵字模式支持正規表達式，請輸入"[Regex-表達式內容]"。支持自定義程式執行，請輸出"[ExtCode-程式]"。支持輸出使用者儲存的內容，請輸出"[LoadUserData-資料名稱]"。</p>
 <p class="mb-4">請參考<a href="https://transbiz.com.tw/regex-regular-expression-ga-%E6%AD%A3%E8%A6%8F%E8%A1%A8%E7%A4%BA%E5%BC%8F" target="_blank">Regex規則</a>。為了系統穩定，請使用<a href="https://www.regextester.com" target="_blank">外部網站測試Regex</a>，再填入本系統。</p>
-<p class="mb-4">由於程式限制，上述指令結尾請加一個空白。Ex. "[Regex...] "</p>
+<p class="mb-4">由於程式限制，上述指令結尾請加一個空白。Ex. "[Regex...] "</p> -->
 
 <!-- DataTales Example -->
 <div class="card shadow mb-4">
@@ -44,7 +44,19 @@
                     <tr>
                         <td>0</td>
                         <td><input type="checkbox" id="input-enable" checked></td>
-                        <td><input type="text" id="input-keyword" class="form-control form-control-sm" aria-describedby="inputGroup-sizing-sm"></td>
+                        <!-- <td><input type="text" id="input-keyword" class="form-control form-control-sm" aria-describedby="inputGroup-sizing-sm"></td> -->
+                        <td>
+                            <div class="row">
+                                <div class="col-10">
+                                    <input type="text" id="input-keyword" class="form-control form-control-sm" aria-describedby="inputGroup-sizing-sm">
+                                </div>
+                                <div class="col-2">
+                                    <button type="button" class="btn btn-outline-primary btn-sm" onclick="on_modal_click('input-keyword')">
+                                        R
+                                    </button>
+                                </div> 
+                            </div>                                                       
+                        </td>
                         <td>
                             <div class="row">
                                 <div class="col-10">
@@ -57,7 +69,7 @@
                                 </div> 
                             </div>                                                       
                         </td>
-                        <td><button type="button" id="input-send" class="btn btn-outline-primary btn-sm" onclick="add_keyword()">ADD</button></td>
+                        <td><button type="button" id="input-send" class="btn btn-outline-primary btn-sm" onclick="add_keyword()">+</button></td>
                     </tr>
                 </tbody>
             </table>
@@ -99,7 +111,7 @@
             row.insertCell(1).innerHTML = $KEYWORD_DATA[i][1];
             row.insertCell(2).innerHTML = $KEYWORD_DATA[i][2];
             row.insertCell(3).innerHTML = $KEYWORD_DATA[i][3];
-            row.insertCell(4).innerHTML = '<button type="button" id="input-send" class="btn btn-outline-danger btn-sm" onclick="delete_keyword('+$KEYWORD_DATA[i][0]+')">REMOVE</button>';
+            row.insertCell(4).innerHTML = '<button type="button" id="input-send" class="btn btn-outline-danger btn-sm" onclick="delete_keyword('+$KEYWORD_DATA[i][0]+')">-</button>';
         }
     }
 

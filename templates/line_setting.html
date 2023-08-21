@@ -3,6 +3,15 @@
 {%block PAGE_NAME%}ChatGPT - API Setting{%endblock%}
 
 {%block PAGEUP_SCRIPT%}
+<!-- Custom styles for this page -->
+<link href="{{url_for('static',filename='vendor/datatables/dataTables.bootstrap4.min.css')}}" rel="stylesheet">
+
+<!-- Bootstrap core JavaScript-->
+<script src="{{url_for('static',filename='vendor/jquery/jquery.min.js')}}"></script>
+<script src="{{url_for('static',filename='vendor/bootstrap/js/bootstrap.bundle.min.js')}}"></script>
+
+<!-- Core plugin JavaScript-->
+<script src="{{url_for('static',filename='vendor/jquery-easing/jquery.easing.min.js')}}"></script>
 
 
 {%endblock%}
@@ -21,7 +30,7 @@
     </div>
     <div class="card-body">
         <p>請參考Q&A頁面說明</p>
-        <h6>請上傳圖片(png/jpg)</h6>
+        <!-- <h6>請上傳圖片(png/jpg)</h6>
         <form id="upload-form-image" enctype="multipart/form-data">
             <input type="file" name="file" id="file-richmenu-image">
             <input type="submit" value="上傳圖片">
@@ -35,83 +44,89 @@
             <p id="status-richmenu-json"></p>
         </form>
         <br/>
-        <h6>請依序上傳檔案，並點擊右上方儲存。</h6>
+        <h6>請依序上傳檔案，並點擊右上方儲存。</h6> -->
+        <button type="button" class="btn btn-outline-primary btn-sm" onmousedown="on_richmenu_modal_click()">
+            RichMenu 設定
+        </button>  
     </div>
 </div>
+
+{% include 'line_richmenu.html' %}
 
 {%endblock%}
 
 {%block PAGEDOWN_SCRIPT%}
+
 <script>
-    $('#upload-form-image').submit(function(event) {
-        event.preventDefault();
-        var formData = new FormData(this);
-        $.ajax({
-            url: "/api/image/img"+"?sid={{PASS_DATA['SID']}}",
-            type: 'POST',
-            data: formData,
-            processData: false,
-            contentType: false,
-            success: function(data) {
-                $('#status-richmenu-image').html(data)
-            },
-            error: function(data) {
-                alert('上傳失敗！')
-                console.error(data)
-            }
-        });
-    });
+    // $('#upload-form-image').submit(function(event) {
+    //     event.preventDefault();
+    //     var formData = new FormData(this);
+    //     $.ajax({
+    //         url: "/api/image/img"+"?sid={{PASS_DATA['SID']}}",
+    //         type: 'POST',
+    //         data: formData,
+    //         processData: false,
+    //         contentType: false,
+    //         success: function(data) {
+    //             $('#status-richmenu-image').html(data)
+    //         },
+    //         error: function(data) {
+    //             alert('上傳失敗！')
+    //             console.error(data)
+    //         }
+    //     });
+    // });
 
-    $('#upload-form-json').submit(function(event) {
-        event.preventDefault();
-        var formData = new FormData(this);
+    // $('#upload-form-json').submit(function(event) {
+    //     event.preventDefault();
+    //     var formData = new FormData(this);
 
-        var selectedFile = $("#file-richmenu-json")[0].files[0];
-        // Check if a file is selected
-        if (selectedFile) {
-            var fileName = selectedFile.name;
-            $.ajax({
-            url: "/api/file/"+fileName+"?sid={{PASS_DATA['SID']}}",
-            type: 'POST',
-            data: formData,
-            processData: false,
-            contentType: false,
-            success: function(data) {
-                $('#status-richmenu-json').html(data)
-            },
-            error: function(data) {
-                alert('上傳失敗！')
-                console.error(data)
-            }
-            });
-        }
+    //     var selectedFile = $("#file-richmenu-json")[0].files[0];
+    //     // Check if a file is selected
+    //     if (selectedFile) {
+    //         var fileName = selectedFile.name;
+    //         $.ajax({
+    //         url: "/api/file/"+fileName+"?sid={{PASS_DATA['SID']}}",
+    //         type: 'POST',
+    //         data: formData,
+    //         processData: false,
+    //         contentType: false,
+    //         success: function(data) {
+    //             $('#status-richmenu-json').html(data)
+    //         },
+    //         error: function(data) {
+    //             alert('上傳失敗！')
+    //             console.error(data)
+    //         }
+    //         });
+    //     }
         
-    });
+    // });
 
-    function save_richmenu(){
-        var data = {
-            "richmenu_image": $('#status-richmenu-image').html(),
-            "richmenu_json": $('#status-richmenu-json').html(),
-        }
-        if (data['richmenu_image'] == '' || data['richmenu_json'] == ''){
-            alert('請先上傳圖片與json檔案！')
-            return
-        }
+    // function save_richmenu(){
+    //     var data = {
+    //         "richmenu_image": $('#status-richmenu-image').html(),
+    //         "richmenu_json": $('#status-richmenu-json').html(),
+    //     }
+    //     if (data['richmenu_image'] == '' || data['richmenu_json'] == ''){
+    //         alert('請先上傳圖片與json檔案！')
+    //         return
+    //     }
 
-        $.ajax({
-            url: "/api/line/rich_menu?sid={{PASS_DATA['SID']}}",
-            type: "POST",
-            data: JSON.stringify(data),
-            contentType: "application/json; charset=utf-8",
-            dataType: "json",
-            success: function (data) {
-                alert('儲存成功！')
-            },
-            error: function (err) {
-                alert('ERROR', err.responseText);
-            }
-        });
-    }
+    //     $.ajax({
+    //         url: "/api/line/rich_menu?sid={{PASS_DATA['SID']}}",
+    //         type: "POST",
+    //         data: JSON.stringify(data),
+    //         contentType: "application/json; charset=utf-8",
+    //         dataType: "json",
+    //         success: function (data) {
+    //             alert('儲存成功！')
+    //         },
+    //         error: function (err) {
+    //             alert('ERROR', err.responseText);
+    //         }
+    //     });
+    // }
 
 </script>
 {%endblock%}

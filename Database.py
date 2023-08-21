@@ -9,6 +9,9 @@ class database:
         self.c = self.conn.cursor()
         self.db_lock = db_lock
 
+    def __del__(self):
+        self.conn.close()
+
     def deal_sql_request(self, command, params=None) -> list:
         # TODO : 建議使用transaction重新改寫
         try:

@@ -1,0 +1,294 @@
+
+<!-- Modal -->
+<div class="modal fade" id="ModalRichMenu" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog modal-lg" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="myModalLabel">Rich Menu 設定</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <!-- menu -->
+        <div class="modal-body">
+            <div style="display: inline-block;">
+                <a>rich menu id</a>
+                    <button type="button" class="btn btn-outline-primary btn-sm" onmousedown="toggle_mode('richmenu1')">
+                        1
+                    </button>      
+                    <button type="button" class="btn btn-outline-primary btn-sm" onmousedown="toggle_mode('richmenu2')">
+                        2
+                    </button> 
+                    <button type="button" class="btn btn-outline-primary btn-sm" onmousedown="toggle_mode('richmenu3')">
+                        3
+                    </button>               
+            </div>
+            <hr/>
+            <!-- content -->
+            <div id="richmenu1_content" class="richmenu">
+                <h3>Rich Menu 1</h3>
+                <h6>請上傳圖片(png/jpg)</h6>
+                <form id="upload-form-image-1" enctype="multipart/form-data">
+                    <input type="file" name="file" id="file-richmenu-image-1">
+                    <input type="submit" value="上傳圖片">
+                    <p id="status-richmenu-image-1"></p>
+                </form>
+                <br/>
+                <h6>請上傳json檔案</h6>
+                <form id="upload-form-json-1" enctype="multipart/form-data">
+                    <input type="file" name="file" id="file-richmenu-json-1">
+                    <input type="submit" value="上傳json檔案">
+                    <p id="status-richmenu-json-1"></p>
+                </form>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" value="" id="richmenu-set-default-1">
+                    <label class="form-check-label" for="richmenu-set-default-1">
+                      是否設定為預設選單(這會覆蓋原本的預設選單)
+                    </label>
+                </div>
+                <br/>
+                <button type="button" class="btn btn-primary btn-sm"  style="margin-left: 10px;" onclick="save_richmenu(1)">儲存</button>
+            </div>
+
+            <div id="richmenu2_content" class="richmenu">
+                <h3>Rich Menu 2</h3>
+                <h6>請上傳圖片(png/jpg)</h6>
+                <form id="upload-form-image-2" enctype="multipart/form-data">
+                    <input type="file" name="file" id="file-richmenu-image-2">
+                    <input type="submit" value="上傳圖片">
+                    <p id="status-richmenu-image-2"></p>
+                </form>
+                <br/>
+                <h6>請上傳json檔案</h6>
+                <form id="upload-form-json-2" enctype="multipart/form-data">
+                    <input type="file" name="file" id="file-richmenu-json-2">
+                    <input type="submit" value="上傳json檔案">
+                    <p id="status-richmenu-json-2"></p>
+                </form>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" value="" id="richmenu-set-default-2">
+                    <label class="form-check-label" for="richmenu-set-default-2">
+                      是否設定為預設選單(這會覆蓋原本的預設選單)
+                    </label>
+                </div>
+                <br/>
+                <button type="button" class="btn btn-primary btn-sm"  style="margin-left: 10px;" onclick="save_richmenu(2)">儲存</button>
+            </div>
+
+            <div id="richmenu3_content" class="richmenu">
+                <h3>Rich Menu 3</h3>
+                <h6>請上傳圖片(png/jpg)</h6>
+                <form id="upload-form-image-1" enctype="multipart/form-data">
+                    <input type="file" name="file" id="file-richmenu-image-1">
+                    <input type="submit" value="上傳圖片">
+                    <p id="status-richmenu-image-1"></p>
+                </form>
+                <br/>
+                <h6>請上傳json檔案</h6>
+                <form id="upload-form-json-3" enctype="multipart/form-data">
+                    <input type="file" name="file" id="file-richmenu-json-3">
+                    <input type="submit" value="上傳json檔案">
+                    <p id="status-richmenu-json-3"></p>
+                </form>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" value="" id="richmenu-set-default-3">
+                    <label class="form-check-label" for="richmenu-set-default-3">
+                      是否設定為預設選單(這會覆蓋原本的預設選單)
+                    </label>
+                </div>
+                <br/>
+                <button type="button" class="btn btn-primary btn-sm"  style="margin-left: 10px;" onclick="save_richmenu(3)">儲存</button>
+            </div>
+        
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+</div>
+
+<script>
+    function on_richmenu_modal_click(){
+        $('#ModalRichMenu').modal('toggle');
+    }
+
+    function toggle_mode(mode){
+        // hide all element in class reply_content
+        var richmenu = document.getElementsByClassName("richmenu");
+        for (let i = 0; i < richmenu.length; i++) {
+            richmenu[i].style.display = "none";
+        }
+        // display the element with id mode+'_reply_content'
+        document.getElementById(mode+'_content').style.display = "block";
+    }
+    // show default content for image reply
+    toggle_mode('richmenu1')
+
+    $('#upload-form-image-1').submit(function(event) {
+        event.preventDefault();
+        var formData = new FormData(this);
+        $.ajax({
+            url: "/api/image/img"+"?sid={{PASS_DATA['SID']}}",
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(data) {
+                $('#status-richmenu-image-1').html(data)
+            },
+            error: function(data) {
+                alert('上傳失敗！')
+                console.error(data)
+            }
+        });
+    });
+
+    $('#upload-form-json-1').submit(function(event) {
+        event.preventDefault();
+        var formData = new FormData(this);
+
+        var selectedFile = $("#file-richmenu-json-1")[0].files[0];
+        // Check if a file is selected
+        if (selectedFile) {
+            var fileName = selectedFile.name;
+            $.ajax({
+            url: "/api/file/"+fileName+"?sid={{PASS_DATA['SID']}}",
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(data) {
+                $('#status-richmenu-json-1').html(data)
+            },
+            error: function(data) {
+                alert('上傳失敗！')
+                console.error(data)
+            }
+            });
+        }
+        
+    });
+
+    $('#upload-form-image-2').submit(function(event) {
+        event.preventDefault();
+        var formData = new FormData(this);
+        $.ajax({
+            url: "/api/image/img"+"?sid={{PASS_DATA['SID']}}",
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(data) {
+                $('#status-richmenu-image-2').html(data)
+            },
+            error: function(data) {
+                alert('上傳失敗！')
+                console.error(data)
+            }
+        });
+    });
+
+    $('#upload-form-json-2').submit(function(event) {
+        event.preventDefault();
+        var formData = new FormData(this);
+
+        var selectedFile = $("#file-richmenu-json-2")[0].files[0];
+        // Check if a file is selected
+        if (selectedFile) {
+            var fileName = selectedFile.name;
+            $.ajax({
+            url: "/api/file/"+fileName+"?sid={{PASS_DATA['SID']}}",
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(data) {
+                $('#status-richmenu-json-2').html(data)
+            },
+            error: function(data) {
+                alert('上傳失敗！')
+                console.error(data)
+            }
+            });
+        }
+        
+    });
+
+    $('#upload-form-image-3').submit(function(event) {
+        event.preventDefault();
+        var formData = new FormData(this);
+        $.ajax({
+            url: "/api/image/img"+"?sid={{PASS_DATA['SID']}}",
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(data) {
+                $('#status-richmenu-image-3').html(data)
+            },
+            error: function(data) {
+                alert('上傳失敗！')
+                console.error(data)
+            }
+        });
+    });
+
+    $('#upload-form-json-3').submit(function(event) {
+        event.preventDefault();
+        var formData = new FormData(this);
+
+        var selectedFile = $("#file-richmenu-json-3")[0].files[0];
+        // Check if a file is selected
+        if (selectedFile) {
+            var fileName = selectedFile.name;
+            $.ajax({
+            url: "/api/file/"+fileName+"?sid={{PASS_DATA['SID']}}",
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(data) {
+                $('#status-richmenu-json-3').html(data)
+            },
+            error: function(data) {
+                alert('上傳失敗！')
+                console.error(data)
+            }
+            });
+        }
+        
+    });
+
+    function save_richmenu(id){
+        var set_default = 0;
+        if (document.getElementById('richmenu-set-default-'+id).checked){
+            set_default = 1
+        }
+
+        var data = {
+            "richmenu_id": id,
+            "richmenu_image": $('#status-richmenu-image-'+id).html(),
+            "richmenu_json": $('#status-richmenu-json-'+id).html(),
+            "set_default": set_default,
+        }
+        if (data['richmenu_image'] == '' || data['richmenu_json'] == ''){
+            alert('請先上傳圖片與json檔案！')
+            return
+        }
+
+        $.ajax({
+            url: "/api/line/rich_menu?sid={{PASS_DATA['SID']}}",
+            type: "POST",
+            data: JSON.stringify(data),
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            success: function (data) {
+                alert('儲存成功！')
+            },
+            error: function (err) {
+                alert('ERROR', err.responseText);
+            }
+        });
+    }
+
+</script>

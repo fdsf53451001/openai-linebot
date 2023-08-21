@@ -43,7 +43,7 @@ class MessageHandler:
         (reply_mode,reply_rule) = (0,None)  
         # 0=none, 1=default_reply, 2=keyword, 3=story, 4=chatgpt, 5=command, 6=flowise
 
-        reply_msg = self.check_restart_command(user_id, receive_text)
+        reply_msg = self.check_restart_command(platform_name, user_id, receive_text)
         if reply_msg : reply_mode = 5
 
         if self.argument.read_conf('function','default_reply') == 'true' and reply_msg == None:
@@ -53,7 +53,7 @@ class MessageHandler:
                 reply_mode = 1
 
         if self.argument.read_conf('function','keyword_reply') == 'true' and reply_msg == None:
-            msg = self.keyword_hold(user_id, receive_text)
+            msg = self.keyword_hold(platform_name, user_id, receive_text)
             if msg : 
                 reply_rule = msg[0]
                 reply_msg = msg[1]
@@ -94,8 +94,8 @@ class MessageHandler:
 
     # ? special command
 
-    def check_restart_command(self, user_id, receive_text):
-        if self.check_input_rule(user_id, '[Regex-(重新開始|重啟|[rR]estart)] ',receive_text):
+    def check_restart_command(self,platform_name, user_id, receive_text):
+        if self.check_input_rule(platform_name, user_id, '[Regex-(重新開始|重啟|[rR]estart)] ',receive_text):
             logging.info('user reset session : %s',user_id)
             t = str(time.time()*1000)
             for i in range(5//2):
@@ -157,7 +157,7 @@ class MessageHandler:
                                     )
         return msg
 
-    def check_input_rule(self, user_id, rule, receive_text):
+    def check_input_rule(self, platform_name, user_id, rule, receive_text):
         '''
         rule : admin defined rule to check this receive_rule
         receive_text : input from user
@@ -182,7 +182,9 @@ class MessageHandler:
                 input_value = command_content[2].split('=')[1]
             except:
                 logging.error('Error Format in SetUserData : '+command_content[2])
+  
             self.db.add_user_extra_data(user_id, input_variable, input_value)
+            self.check_user_special_variable(platform_name, user_id, input_variable, input_value)
             match = True
 
         if rule in receive_text: # match word
@@ -191,14 +193,29 @@ class MessageHandler:
         
         return match
 
+    
+    def check_user_special_variable(self, platform_name, user_id, variable, value):
+        '''
+        This function used to detect special user variable.
+        when this kind of variable change, system will take some action.        
+        ex.
+        RichMenuID : use to change some user's rich menu
+        '''
+        if variable == 'RichMenuID':
+            richmenu_id = self.argument.read_conf('line','richmenu_id_'+str(value))
+            if richmenu_id:
+                self.platforms[platform_name].set_richmenu_for_user(user_id, richmenu_id)
+            else:
+                logging.error('Try to load RichMenu not found : '+str(value))
+
     # ? reply engine
 
-    def keyword_hold(self, user_id, receive_text):
+    def keyword_hold(self,platform_name, user_id, receive_text):
         # return self.db.search_keyword(receive_text)
         keywords = self.db.load_keyword()
         for keyword_row in keywords:
             if not keyword_row[1]: continue
-            if self.check_input_rule(user_id, keyword_row[2], receive_text):
+            if self.check_input_rule(platform_name, user_id, keyword_row[2], receive_text):
                 return (keyword_row[0],TextSendMessage(text=keyword_row[3]))
         return None
     
@@ -218,7 +235,7 @@ class MessageHandler:
         story_content = self.db.load_all_story()
         for story in story_content:
             if story[1] == 1: # enable
-                if self.check_input_rule(user_id, story[3], receive_text):
+                if self.check_input_rule(platform_name, user_id, story[3], receive_text):
                     return self.story_hold_continue(platform_name, user_id, story[2], receive_text)
         # failed to match
         return (None,None)
@@ -234,7 +251,7 @@ class MessageHandler:
             if sentence[1]==1 or sentence[1]==3:
                 return (sentence[0],sentence[2])
             elif sentence[1]==2:
-                if self.check_input_rule(user_id, sentence[2], receive_text):
+                if self.check_input_rule(platform_name, user_id, sentence[2], receive_text):
                     return self.story_hold_continue(platform_name,user_id, sentence[0], receive_text)
         # failed to match
         self.send_to_user(platform_name, user_id, "無法繼續對話，將由OpenAI回覆")
