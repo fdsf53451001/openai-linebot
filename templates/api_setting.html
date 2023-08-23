@@ -28,41 +28,88 @@
     </div>
 </div>
 
+<div class="card mb-4">
+    <div class="card-header">
+        <div style="display: flex;">
+            <h6 class="m-0 font-weight-bold text-primary">匯出/匯入系統資料</h6>
+        </div>
+    </div>
+    <div class="card-body">
+        <h6>匯出</h6>
+        <button type="button" class="btn btn-primary btn-sm"  style="margin-left: 10px;" onclick="export_system_data()">匯出資料</button>
+        <hr/>
+        <h6>匯入 - 請注意，這會清除目前系統的所有資料! 完成後立即重新登入。</h6>
+        <form id="upload-form-system-migrate" enctype="multipart/form-data" style="margin-left: 10px;">
+            <input type="file" name="file" id="file-input-system-migrate">
+            <input type="submit" value="上傳檔案">
+            <hr/>
+            <h6 id="system-migrate-upload-status">請上傳zip檔案，檔案大小上限為100MB!</h6>
+        </form>
+        <!-- <button type="button" class="btn btn-danger btn-sm"  style="margin-left: 10px;" onclick="">匯入資料</button> -->
+    </div>
+</div>
+
 {%endblock%}
 
 {%block PAGEDOWN_SCRIPT%}
 <script>
-function get_setting_field(){
-    $.ajax({
-        url: "/api/system_setting?sid={{PASS_DATA['SID']}}",
-        type: "GET",
-        success: function (data) {
-            $("#setting-field").val(data);
-        },
-        error: function (xhr, ajaxOptions, thrownError) {
-            alert("資料取得失敗");
-        }
-    });
-}
+    function get_setting_field(){
+        $.ajax({
+            url: "/api/system_setting?sid={{PASS_DATA['SID']}}",
+            type: "GET",
+            success: function (data) {
+                $("#setting-field").val(data);
+            },
+            error: function (xhr, ajaxOptions, thrownError) {
+                alert("資料取得失敗");
+            }
+        });
+    }
 
-function save_setting_field(){
-    $.ajax({
-        url: "/api/system_setting?sid={{PASS_DATA['SID']}}",
-        type: "POST",
-        data: JSON.stringify({
-            "settings": $("#setting-field").val()
-        }),
-        contentType: "application/json; charset=utf-8",
-            dataType: "json",
-        success: function (data) {
-            location.reload();
-        },
-        error: function (xhr, ajaxOptions, thrownError) {
-            alert("儲存失敗");
-        }
-    });
-}
+    function save_setting_field(){
+        $.ajax({
+            url: "/api/system_setting?sid={{PASS_DATA['SID']}}",
+            type: "POST",
+            data: JSON.stringify({
+                "settings": $("#setting-field").val()
+            }),
+            contentType: "application/json; charset=utf-8",
+                dataType: "json",
+            success: function (data) {
+                location.reload();
+            },
+            error: function (xhr, ajaxOptions, thrownError) {
+                alert("儲存失敗");
+            }
+        });
+    }
 
-get_setting_field();
+    get_setting_field();
+
+    function export_system_data(){
+        let api_url = "/api/system_migrate?sid={{PASS_DATA['SID']}}"; 
+        window.open(api_url, '_blank').focus();
+    }
+
+    $('#upload-form-system-migrate').submit(function(event) {
+        $('#system-migrate-upload-status').html('上傳中，請耐心等候!');
+        event.preventDefault();
+        var formData = new FormData(this);
+        $.ajax({
+            url: "/api/system_migrate"+"?sid={{PASS_DATA['SID']}}",
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(data) {
+                $('#system-migrate-upload-status').html('上傳成功！')
+                window.location.href = "/login";
+            },
+            error: function(data) {
+                $('#system-migrate-upload-status').html('上傳失敗！')
+                alert(data.responseText)
+            }
+        });
+    });
 </script>
 {%endblock%}

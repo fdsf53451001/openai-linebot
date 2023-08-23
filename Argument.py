@@ -19,3 +19,4 @@ class Argument:
         self.config[type][key] = value
         with open('data/config.conf', 'w', encoding="utf8") as configfile:
             self.config.write(configfile)
+    

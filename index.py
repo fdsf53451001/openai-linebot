@@ -20,6 +20,7 @@ from Database import database
 from MessageHandler import MessageHandler
 from APIHandler import APIHandler
 from ChatAnalyze import ChatAnalyze
+from SystemMigrate import SystemMigrate
 
 from service.llm.Chatgpt import ChatGPT
 
@@ -92,6 +93,8 @@ platform_info = {
     'PLATFORM_NAME':argument.read_conf('system','platform_name'),
     'BUILD_VERSION':BUILD_VERSION,
 }
+
+sc = SystemMigrate(db, platform_info)
 
 '''
 page definition
@@ -666,6 +669,46 @@ class SystemConfigAPI(Resource):
 
         return send_file(self.configURL, mimetype='text/plain')
 
+class SystemMigrateAPI(Resource):
+    def __init__(self, *args, **kwargs):
+        self.db = kwargs['db']
+        self.apiHandler = kwargs['apiHandler']
+        self.api = kwargs['api']
+
+    @api.doc(params={'sid':'sid'})
+    def get(self):
+        user_config = self.apiHandler.check_request_username(request)
+        if not user_config:
+            return 'Not Authorized',401
+        zip_location = sc.export_system_config()
+        if not zip_location:
+            return 'Internal Server Error',500
+        return send_file(zip_location, mimetype='application/zip')
+    
+    @api.doc(params={'sid':'sid'})
+    @api.expect(api.model('SystemMigrateAPI', {
+        'file': fields.Raw(required=True),
+    }))
+    def post(self):
+        user_config = self.apiHandler.check_request_username(request)
+        if not user_config:
+            return 'Not Authorized',401
+        
+        parse = reqparse.RequestParser()
+        parse.add_argument('file', type=werkzeug.datastructures.FileStorage, location='files')
+        args = parse.parse_args()
+        file = args['file']
+
+        if file.content_type not in {'application/zip','application/x-zip-compressed'}:
+            return ('file type not zip',415)
+        
+        file.save('resources/files/migrate.zip')
+        result = sc.import_system_config('resources/files/migrate.zip')
+        if not result:
+            return ('failed to restore',500)
+        return ('ok',200)
+
+            
 class SystemSetting(Resource):
     def __init__(self, *args, **kwargs):
         self.argument = Argument()
@@ -827,10 +870,11 @@ api.add_resource(Story_name, '/api/story_name',resource_class_kwargs={'api':api,
 api.add_resource(Story_sentence, '/api/story_sentence/<string:story_id>',resource_class_kwargs={'api':api,'db':db,'apiHandler':apiHandler})
 api.add_resource(User, '/api/user/<string:UUID>',resource_class_kwargs={'api':api,'db':db,'apiHandler':apiHandler})
 api.add_resource(SystemSetting, '/api/system_setting',resource_class_kwargs={'api':api,'apiHandler':apiHandler})
+api.add_resource(SystemMigrateAPI, '/api/system_migrate',resource_class_kwargs={'api':api,'db':db,'apiHandler':apiHandler})
+api.add_resource(SystemConfigAPI, '/api/system_config',resource_class_kwargs={'api':api,'db':db,'apiHandler':apiHandler})
 api.add_resource(ImageAPI, '/api/image/<string:filename>',resource_class_kwargs={'api':api,'db':db,'apiHandler':apiHandler})
 api.add_resource(VideoAPI, '/api/video/<string:filename>',resource_class_kwargs={'api':api,'db':db,'apiHandler':apiHandler})
 api.add_resource(VideoThumbnailAPI, '/api/video_thumbnail/<string:filename>',resource_class_kwargs={'api':api,'db':db,'apiHandler':apiHandler})
-api.add_resource(SystemConfigAPI, '/api/system_config',resource_class_kwargs={'api':api,'db':db,'apiHandler':apiHandler})
 api.add_resource(FileAPI, '/api/file/<string:filename>',resource_class_kwargs={'api':api,'db':db,'apiHandler':apiHandler})
 api.add_resource(LineReachMenu, '/api/line/rich_menu',resource_class_kwargs={'api':api,'argument':argument,'apiHandler':apiHandler,'line_platform':line})
 

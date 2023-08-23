@@ -5,12 +5,23 @@ import json
 
 class database:
     def __init__(self, db_file_path, db_lock):
-        self.conn = sqlite3.connect(db_file_path, check_same_thread=False)
+        self.db_file_path = db_file_path
+        self.start_connection(db_lock)
+
+    def __del__(self):
+        self.stop_connection()
+
+    def start_connection(self, db_lock):
+        self.conn = sqlite3.connect(self.db_file_path, check_same_thread=False)
         self.c = self.conn.cursor()
         self.db_lock = db_lock
 
-    def __del__(self):
+    def stop_connection(self):
         self.conn.close()
+
+    def restart_connection(self):
+        self.conn = sqlite3.connect(self.db_file_path, check_same_thread=False)
+        self.c = self.conn.cursor()
 
     def deal_sql_request(self, command, params=None) -> list:
         # TODO : 建議使用transaction重新改寫
