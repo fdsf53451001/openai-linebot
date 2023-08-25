@@ -386,6 +386,65 @@
         .style("fill", "red");
     }
 
+    // function update_graph(data){
+    //     // 清空畫布
+    //     d3.select("svg").selectAll("*").remove();
+
+    //     const treeData = processData(data);
+
+    //     if (!treeData) {
+    //         displayErrorMessage("數據錯誤，請檢查以下節點資訊。切勿直接儲存，以免系統錯誤!");
+    //     } else {
+    //         const width = 720;
+    //         const height = 240;
+
+    //         const colorScale = d3.scaleOrdinal(d3.schemeCategory10); // Color scale for different types
+
+    //         const svg = d3.select("svg")
+    //             .attr("width", width)
+    //             .attr("height", height);
+
+    //         const tree = d3.tree()
+    //             .size([height-100, width-100])
+    //             .separation((a, b) => (a.parent == b.parent ? 1 : 2) / a.depth);
+
+    //         const root = d3.hierarchy(treeData[0]);
+
+    //         const treeLayout = tree(root);
+
+    //         const g = svg.append("g")
+    //             .attr("transform", "translate(50,50)");
+
+    //         const link = g.selectAll(".link")
+    //             .data(treeLayout.links())
+    //             .enter().append("path")
+    //             .attr("class", "link")
+    //             .attr("d", d => `
+    //             M${d.source.y},${d.source.x}
+    //             C${(d.source.y + d.target.y) / 2},${d.source.x}
+    //             ${(d.source.y + d.target.y) / 2},${d.target.x}
+    //             ${d.target.y},${d.target.x}
+    //             `);
+
+    //         const node = g.selectAll(".node")
+    //             .data(treeLayout.descendants())
+    //             .enter().append("g")
+    //             .attr("class", "node")
+    //             .attr("transform", d => `translate(${d.y},${d.x})`);
+
+    //         node.append("circle")
+    //             .attr("r", 6) // Adjust circle size
+    //             .style("fill", d => colorScale(d.data.type)); // Use color scale for fill color
+
+    //         node.append("text")
+    //             .attr("dy", "0.31em")
+    //             .attr("x", d => d.children ? -13 : 13)
+    //             .attr("y", d => d.children ? -13 : 13) // Shift text position for non-leaf nodes
+    //             .attr("text-anchor", d => d.children ? "end" : "start")
+    //             .text(d => truncateText(d.data.content, 10)); // Truncate text if longer than 10 characters
+    //     }
+    // }
+
     function update_graph(data){
         // 清空畫布
         d3.select("svg").selectAll("*").remove();
@@ -441,9 +500,19 @@
                 .attr("x", d => d.children ? -13 : 13)
                 .attr("y", d => d.children ? -13 : 13) // Shift text position for non-leaf nodes
                 .attr("text-anchor", d => d.children ? "end" : "start")
+                .style("opacity", 0) // Initially hide text
+                .style("font-size", "16px") // Set the font size
                 .text(d => truncateText(d.data.content, 10)); // Truncate text if longer than 10 characters
+
+            // Show text on mouseover
+            node.on("mouseover", function() {
+                d3.select(this).select("text").style("opacity", 1);
+            }).on("mouseout", function() {
+                d3.select(this).select("text").style("opacity", 0);
+            });
         }
     }
+
 
     get_story_name()
     // load_story_content("1")
