@@ -16,8 +16,16 @@ services:
     volumes:
       - ./data:/opt/grafana
     environment:
-      - GF_INSTALL_PLUGINS=frser-sqlite-datasource, grafana-image-renderer
+      - GF_INSTALL_PLUGINS=frser-sqlite-datasource
+      - GF_RENDERING_SERVER_URL=http://grafana-render:8081/render
+      - GF_RENDERING_CALLBACK_URL=http://grafana:8080/
+      - GF_LOG_FILTERS=rendering:debug
     user: "472"
+
+  grafana-render:
+    image: grafana/grafana-image-renderer:latest
+    ports:
+      - 8081:8081
 
   flowise:
     image: flowiseai/flowise
