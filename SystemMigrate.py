@@ -38,7 +38,8 @@ class SystemMigrate:
         '''
         success = False
         try:
-            self.db.stop_connection()
+            if self.db:
+                self.db.stop_connection()
             extracted_path = os.path.join('/tmp', zip_file_path)
             max_uncompressed_size = 500 * 1024 * 1024  # 500MB
             total_uncompressed_size = 0
@@ -53,14 +54,17 @@ class SystemMigrate:
             extract_data_folder = os.path.join(extracted_path, 'data')
             extract_resources_folder = os.path.join(extracted_path, 'resources')
 
-            if not os.path.exists(extract_data_folder) or not os.path.exists(extract_resources_folder):
+            # check zip file
+            if not os.path.exists(extract_data_folder):
                 shutil.rmtree(extracted_path)
                 raise Exception('import system config error','necessory data folder not found in zip file!')          
                 
+            # check passed, start migration
             shutil.rmtree('./data')
-            shutil.rmtree('./resources')
             shutil.copytree(extract_data_folder, './data')
-            shutil.copytree(extract_resources_folder, './resources')
+            if os.path.exists(extract_resources_folder): # check have resources or not
+                shutil.rmtree('./resources')
+                shutil.copytree(extract_resources_folder, './resources')
             shutil.rmtree(extracted_path)
 
             logging.warn('import system config done.')
@@ -70,6 +74,13 @@ class SystemMigrate:
             logging.error('import system config error',e)
 
         finally:
-            self.db.restart_connection()
+            if self.db:
+                self.db.restart_connection()
+            os.remove(zip_file_path)
         
         return success
+
+if __name__ == '__main__':
+    # before migration, run stop.sh first.
+    sm = SystemMigrate(db=None, platform_info=None)
+    sm.import_system_config('migrate.zip')

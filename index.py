@@ -46,6 +46,11 @@ def check_environment():
     # set timezone to UTC+8
     process = subprocess.Popen("sudo timedatectl set-timezone Asia/Taipei", shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
+    # setup data folder
+    folders = ['data','data/flowise','data/cert','static/grafana','resources','resources/image','resources/video','resources/video/img','resources/files']
+    for folder in folders:
+        os.makedirs(folder, exist_ok=True)
+
     # create log file
     if not os.path.isfile('data/system.log'):
         open('data/system.log', 'a').close()
@@ -685,28 +690,28 @@ class SystemMigrateAPI(Resource):
             return 'Internal Server Error',500
         return send_file(zip_location, mimetype='application/zip')
     
-    @api.doc(params={'sid':'sid'})
-    @api.expect(api.model('SystemMigrateAPI', {
-        'file': fields.Raw(required=True),
-    }))
-    def post(self):
-        user_config = self.apiHandler.check_request_username(request)
-        if not user_config:
-            return 'Not Authorized',401
+    # @api.doc(params={'sid':'sid'})
+    # @api.expect(api.model('SystemMigrateAPI', {
+    #     'file': fields.Raw(required=True),
+    # }))
+    # def post(self):
+    #     user_config = self.apiHandler.check_request_username(request)
+    #     if not user_config:
+    #         return 'Not Authorized',401
         
-        parse = reqparse.RequestParser()
-        parse.add_argument('file', type=werkzeug.datastructures.FileStorage, location='files')
-        args = parse.parse_args()
-        file = args['file']
+    #     parse = reqparse.RequestParser()
+    #     parse.add_argument('file', type=werkzeug.datastructures.FileStorage, location='files')
+    #     args = parse.parse_args()
+    #     file = args['file']
 
-        if file.content_type not in {'application/zip','application/x-zip-compressed'}:
-            return ('file type not zip',415)
+    #     if file.content_type not in {'application/zip','application/x-zip-compressed'}:
+    #         return ('file type not zip',415)
         
-        file.save('resources/files/migrate.zip')
-        result = sc.import_system_config('resources/files/migrate.zip')
-        if not result:
-            return ('failed to restore',500)
-        return ('ok',200)
+    #     file.save('resources/files/migrate.zip')
+    #     result = sc.import_system_config('resources/files/migrate.zip')
+    #     if not result:
+    #         return ('failed to restore',500)
+    #     return ('ok',200)
 
             
 class SystemSetting(Resource):
