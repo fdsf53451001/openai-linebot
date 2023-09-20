@@ -415,7 +415,7 @@ class database:
     def load_system_logs(self):
         # logs = [{'time':'2020-01-01','status':'success' ,'text':'test'}]
         logs = []
-        with open('data/system.log', 'r') as f:
+        with open('data/system_warn.log', 'r') as f:
             texts = f.readlines()[::-1]
             for text_row in texts:
                 if text_row.startswith('*'):

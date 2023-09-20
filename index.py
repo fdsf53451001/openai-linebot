@@ -8,12 +8,8 @@ import time
 import json
 from datetime import datetime
 import logging
-logging.basicConfig(
-                    format='* %(asctime)s %(levelname)s %(message)s',
-                    level=logging.WARN , 
-                    handlers=[logging.StreamHandler(), logging.FileHandler('data/system.log',delay=True)]
-                    )
 import threading
+
 sys.path.append('data/')
 from Argument import Argument
 from Database import database
@@ -24,19 +20,31 @@ from SystemMigrate import SystemMigrate
 
 from service.llm.Chatgpt import ChatGPT
 
-# from service.api.Keyword import Keyword #, Keywords
-# from service.api.Setting import ChatSetting
-# from service.api.SystemSetting import SystemSetting
-# from service.api.SystemConfigAPI import SystemConfigAPI
-# from service.api.Story import Story_name, Story_sentence
-# from service.api.User import User
-# from service.api.ImageAPI import ImageAPI
-# from service.api.VideoAPI import VideoAPI
-# from service.api.VideoThumbnailAPI import VideoThumbnailAPI
-# from service.api.FileAPI import FileAPI
-# from service.api.LineSetting import LineReachMenu
+def setup_logger():
+    logger = logging.getLogger()
+    logger.setLevel(logging.DEBUG)
 
-BUILD_VERSION = 'v20230821'
+    formatter = logging.Formatter('* %(asctime)s %(levelname)s %(message)s')
+
+    console_handler = logging.StreamHandler()
+    console_handler.setLevel(logging.WARN)
+    console_handler.setFormatter(formatter)
+
+    file_warn_handler = logging.FileHandler('data/system_warn.log')
+    file_warn_handler.setLevel(logging.WARN) 
+    file_warn_handler.setFormatter(formatter)
+
+    file_handler = logging.FileHandler('data/system.log')
+    file_handler.setLevel(logging.INFO) 
+    file_handler.setFormatter(formatter)
+
+    logger.addHandler(console_handler)
+    logger.addHandler(file_handler)
+    logger.addHandler(file_warn_handler)
+
+setup_logger()
+
+BUILD_VERSION = 'v20230917'
 
 '''
 init
@@ -52,8 +60,8 @@ def check_environment():
         os.makedirs(folder, exist_ok=True)
 
     # create log file
-    if not os.path.isfile('data/system.log'):
-        open('data/system.log', 'a').close()
+    # if not os.path.isfile('data/system.log'):
+    #     open('data/system.log', 'a').close()
 
     # create config file
     if not os.path.isfile('data/config.conf'):
@@ -125,7 +133,7 @@ def index():
     else:
         (sid,username) = user_config
 
-    fix_logger_level()
+    # fix_logger_level()
 
     # login pass
     PASS_DATA = {'USER_NAME':username,
@@ -139,6 +147,21 @@ def index():
     PASS_DATA.update(platform_info)
     return render_template('index.html',PASS_DATA=PASS_DATA)
 
+@app.route('/changelog')
+def changelog():    
+    user_config = apiHandler.check_request_username(request)
+    if not user_config:
+        return redirect(url_for('login'))
+    else:
+        (sid,username) = user_config
+
+    # login pass
+    PASS_DATA = {'USER_NAME':username,
+                 'SID':sid,
+                }
+    PASS_DATA.update(platform_info)
+    return render_template('changelog.html',PASS_DATA=PASS_DATA)
+
 @app.route('/keyword')
 def keyword_page():
     user_config = apiHandler.check_request_username(request)
@@ -147,6 +170,7 @@ def keyword_page():
     else:
         (sid,username) = user_config
     
+
     PASS_DATA = {'USER_NAME':username,
                  'SID':sid,
                  'KEYWORD_DATA':json.dumps(db.load_keyword())
@@ -349,13 +373,6 @@ def page_not_found(error):
                 }
     PASS_DATA.update(platform_info)
     return render_template('404.html',PASS_DATA=PASS_DATA)  # 錯誤回傳
-
-def fix_logger_level():
-    # set global logger level
-    loggers = [logging.getLogger(name) for name in logging.root.manager.loggerDict]
-    for logger in loggers:
-        logger.setLevel(logging.WARNING)
-
 
 '''
 API resources

@@ -84,7 +84,7 @@ class MessageHandler:
             logging.warning('no reply engine response!')
 
 
-        logging.debug('reply to [%s] %s %s',platform_name,user_id,str(reply_msg))
+        logging.info('reply to [%s] %s %s',platform_name,user_id,str(reply_msg))
         if isinstance(reply_msg, TextSendMessage): # text message
             chatgpt_sentence_id = self.db.save_chat(user_id, int(time.time()*1000), 0, reply_msg.text)
         else: # other rich message
@@ -187,6 +187,7 @@ class MessageHandler:
             self.check_user_special_variable(platform_name, user_id, input_variable, input_value)
             match = True
 
+        # TODO : change match rule to maximum words match
         if rule in receive_text: # match word
             match = True
             return match
@@ -342,6 +343,13 @@ class MessageHandler:
     # ? other utility
 
     def fetch_command_content(self, text, command) -> Tuple[int,int,str]:
+        '''
+        input:
+            text : input text to check
+            command : check if command in text
+        output:
+            (start_index, end_index, command_content)
+        '''
         if text and '['+command+'-' in text:
             try:
                 s_index = text.index('['+command+'-')

@@ -231,7 +231,9 @@
                                         <label class="btn btn-outline-primary" for="sentence0-1">觸發條件</label>\
                                       </div>\
                                 </td>\
-                                <td><input type="text" id="input-outputorcondiction'+i+'" class="form-control form-control-sm" aria-describedby="inputGroup-sizing-sm" onchange="on_sentence_output_change('+i+')" value="'+outputorcondiction+'"></td>\
+                                <td>\
+                                    <input type="text" id="input-outputorcondiction'+i+'" class="form-control form-control-sm" aria-describedby="inputGroup-sizing-sm" onchange="on_sentence_output_change('+i+')" value="'+outputorcondiction+'">\
+                                </td>\
                                 <td>\
                                     <button type="button" id="input-send" class="btn btn-outline-danger btn-sm" onclick="on_sentence_add('+i+','+sentence_id+')">+</button> \
                                 </td>\
@@ -265,7 +267,7 @@
                                 <td>\
                                     <div class="row">\
                                         <div class="col-10">\
-                                            <input type="text" id="input-outputorcondiction'+i+'" class="form-control form-control-sm" aria-describedby="inputGroup-sizing-sm" onchange="on_sentence_output_change('+i+')" value=\''+outputorcondiction+'\'>\
+                                            <textarea id="input-outputorcondiction'+i+'" style="width: 100%;" rows="1" onchange="on_sentence_output_change('+i+')">'+outputorcondiction+'</textarea>\
                                         </div>\
                                         <div class="col-2">\
                                             <button type="button" class="btn btn-outline-primary btn-sm" onclick="on_modal_click(\'input-outputorcondiction'+i+'\')">\

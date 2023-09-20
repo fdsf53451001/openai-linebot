@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{%block PAGE_NAME%}ChatGPT - ChangeLog{%endblock%}
+
+{%block PAGEUP_SCRIPT%}
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        h1 {
+            color: #333;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+{%endblock%}
+
+{%block PAGE%}
+    <h3>更新日誌</h3>
+    <table>
+        <tr>
+            <th>版本</th>
+            <th>內容</th>
+            <th>版本相容性</th>
+        </tr>
+        <tr>
+            <td>v20230917</td>
+            <td>1.在關鍵字/劇本模式中，現在輸出可以換行了。(在輸入框中使用shift+enter換行)<br>
+                2.更完整的logs紀錄。<br>
+                3.新增更新紀錄頁面。
+            </td>
+            <td>可直接升級</td>
+        </tr>
+        <!-- 可以繼續添加更多的更新內容條目 -->
+    </table>
+{%endblock%}
+
+{%block PAGEDOWN_SCRIPT%}
+
+{%endblock%}
