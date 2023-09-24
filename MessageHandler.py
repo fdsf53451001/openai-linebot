@@ -69,14 +69,15 @@ class MessageHandler:
 
         reply_msg = self.check_rich_display(platform_name, user_id, reply_msg)
 
+        if self.argument.read_conf('function','flowise_reply') == 'true' and reply_msg == None:
+            # reply_msg = self.flowise.get_response(user_id)
+            # reply_msg = TextSendMessage(text=reply_msg)
+            reply_msg = self.flowise_hold(platform_name,user_id)
+            reply_mode = 6
+
         if self.argument.read_conf('function','chatgpt_reply') == 'true' and reply_msg == None:
             reply_msg = self.chatgpt_hold(platform_name,user_id)
             reply_mode = 4
-
-        if self.argument.read_conf('function','flowise_reply') == 'true' and reply_msg == None:
-            reply_msg = self.flowise.get_response(user_id)
-            reply_msg = TextSendMessage(text=reply_msg)
-            reply_mode = 6
 
         if reply_msg == None:
             reply_msg = TextSendMessage(text="所有對話引擎不可用，請檢查設定!")
@@ -308,19 +309,51 @@ class MessageHandler:
         return buttons_template
 
     def chatgpt_hold(self, platform_name, user_id) -> TextSendMessage:
+        timeout_config = {
+            'timeout_warning_sec' : self.argument.read_conf('openai','openai_timeout_warning_sec'),
+            'timeout_cut_sec' : self.argument.read_conf('openai','openai_timeout_cut_sec'),
+            'enable_warning_message' : self.argument.read_conf('openai','openai_warning_message')
+        }
+        text_send_message = self.llm_hold(platform_name, user_id, self.chatgpt_handler, 'OpenAI', timeout_config)
+        text_send_message.text = text_send_message.text.replace("AI:", "", 1)
+        return text_send_message
+
+    def flowise_hold(self, platform_name, user_id) -> TextSendMessage:
+        timeout_config = {
+            'timeout_warning_sec' : self.argument.read_conf('openai','10'),
+            'timeout_cut_sec' : self.argument.read_conf('openai','20'),
+            'enable_warning_message' : self.argument.read_conf('openai','false')
+        }
+        text_send_message = self.llm_hold(platform_name, user_id, self.flowuse_handler, 'OpenAI', timeout_config)
+        return text_send_message
+
+    def llm_hold(self, platform_name, user_id, handler_function, handler_name:str, timeout_config:dict) -> TextSendMessage:
+        """Generate response from handler_function, and return TextSendMessage.
+        handler_function is a function that call LLM such as chatgpt, flowise etc.
+
+        Args:
+            platform_name (_type_)
+            user_id (_type_)
+            handler_function (_type_): provide handler function to call LLM
+            handler_name (_type_): handler name to show in log
+            timeout_config (dict): {timeout_warning_sec,timeout_cut_sec,warning_message}
+
+        Returns:
+            TextSendMessage: _description_
+        """                    
         result = []
-        thread = threading.Thread(target=self.chatgpt_handler, args=(platform_name,user_id,result))
+        thread = threading.Thread(target=handler_function, args=(platform_name,user_id,result))
         thread.start()
 
         s_time = time.time()
-        timeout_warning = self.argument.read_conf('openai','openai_timeout_warning_sec')
-        timeout_cut = self.argument.read_conf('openai','openai_timeout_cut_sec')
+        timeout_warning = timeout_config['timeout_warning_sec']
+        timeout_cut = timeout_config['timeout_cut_sec']
         while thread.is_alive() and time.time()-s_time < int(timeout_warning):
             pass    # waiting reply
         
-        if thread.is_alive() and self.argument.read_conf('openai','openai_warning_message'): # send warning
+        if thread.is_alive() and timeout_config['enable_warning_message']=='true': # send warning
             self.send_to_user(platform_name, user_id, "等待回應中...")
-            logging.warning("OpenAI reply timeout for "+timeout_warning+" seconds!")
+            logging.warning(handler_name+" reply timeout for "+timeout_warning+" seconds!")
         
         while thread.is_alive() and time.time()-s_time < int(timeout_cut):
             pass    # waiting reply
@@ -328,16 +361,18 @@ class MessageHandler:
         # stop waiting
         if not thread.is_alive() and result[0]:
             reply_msg = result[0]
-            reply_msg = reply_msg.replace("AI:", "", 1)
         else:
-            reply_msg = "OpenAI 沒有回應或花費太久，請稍候再嘗試！"
-            # self.send_to_user(platform_name, user_id, reply_msg)
+            reply_msg = handler_name+" 沒有回應或花費太久，請稍候再嘗試！"
             logging.warning(reply_msg)
     
         return TextSendMessage(text=reply_msg)
 
     def chatgpt_handler(self, platform_name, user_id, result):
         reply_msg = self.chatgpt.get_response(user_id)
+        result.append(reply_msg)
+
+    def flowise_handler(self, platform_name, user_id, result):
+        reply_msg = self.flowise.get_response(user_id)
         result.append(reply_msg)
 
     # ? other utility

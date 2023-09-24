@@ -30,6 +30,7 @@
                         <th>usage</th>
                         <th>last_update</th>
                         <th>tmp</th>
+                        <th>history</th>
                     </tr>
                 </thead>
                 <tbody id="table-content">
@@ -59,6 +60,7 @@
 
 <script>
     $USERS_DATA = {{ PASS_DATA['USERS_DATA'] | tojson | safe}};
+    $SID = "{{ PASS_DATA['SID'] }}";
     $USERS_DATA = JSON.parse($USERS_DATA);
 
     function timestamp_to_str_format(timestamp){
@@ -89,6 +91,9 @@
             row.insertCell(5).innerHTML = $USERS_DATA[i][7];
             row.insertCell(6).innerHTML = $USERS_DATA[i][5];
             row.insertCell(7).innerHTML = $USERS_DATA[i][6];
+            chat_history_url = "api/user_chat_history/"+$USERS_DATA[i][0]+"?sid="+$SID;
+            row.insertCell(8).innerHTML = '<a href="'+chat_history_url+'"><img src="{{url_for("static",filename="img/download.png")}}" style="height: 30px;width: 30px;"></a>';
+            
         }
     }
 

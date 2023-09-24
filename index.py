@@ -5,7 +5,7 @@ from waitress import serve
 import os, sys, subprocess, psutil
 import shutil
 import time
-import json
+import json, csv
 from datetime import datetime
 import logging
 import threading
@@ -44,7 +44,7 @@ def setup_logger():
 
 setup_logger()
 
-BUILD_VERSION = 'v20230917'
+BUILD_VERSION = 'v20230924'
 
 '''
 init
@@ -188,7 +188,7 @@ def message_page():
     
     PASS_DATA = {'USER_NAME':username,
                  'SID':sid,
-                 'MESSAGE_DATA':json.dumps(db.load_chat_detail())
+                 'MESSAGE_DATA':json.dumps(db.load_recent_chat())
                 }
     PASS_DATA.update(platform_info)
     return render_template('message.html',PASS_DATA=PASS_DATA)
@@ -568,6 +568,19 @@ class LineReachMenu(Resource):
         except KeyError:
             return 'Bad Request',400
 
+class LineMembers(Resource):
+    def __init__(self, *args, **kwargs):
+        self.db = kwargs['db']
+        self.apiHandler = kwargs['apiHandler']
+        self.api = kwargs['api']
+    
+    @api.doc(params={'sid':'sid'})
+    def get(self):
+        user_config = self.apiHandler.check_request_username(request)
+        if not user_config:
+            return 'Not Authorized',401
+        return self.db.load_all_user() 
+
 # class ChatSetting(Resource):
 #     def __init__(self, *args, **kwargs):
 #         self.argument = Argument()
@@ -656,7 +669,7 @@ class Story_sentence(Resource):
         self.db.delete_storyname_id(story_id)
         self.db.delete_storysentence_id(story_id)
 
-class SystemConfigAPI(Resource):
+class SystemConfigFileAPI(Resource):
     def __init__(self, *args, **kwargs):
         self.db = kwargs['db']
         self.apiHandler = kwargs['apiHandler']
@@ -664,7 +677,7 @@ class SystemConfigAPI(Resource):
         self.api = kwargs['api']
     
     @api.doc(params={'sid':'sid'})
-    @api.expect(api.model('SystemConfigAPI', {
+    @api.expect(api.model('SystemConfigFileAPI', {
         'file': fields.Raw(required=True),
     }))
     def post(self):
@@ -731,6 +744,23 @@ class SystemMigrateAPI(Resource):
     #     return ('ok',200)
 
             
+class SystemInfo(Resource):
+    def __init__(self, *args, **kwargs):
+        self.argument = Argument()
+        self.apiHandler = kwargs['apiHandler']  
+        self.db = kwargs['db']
+        self.api = kwargs['api']
+    
+    @api.doc(params={'sid':'sid'})
+    def get(self):
+        system_info = {
+            'USER_AMOUNT':db.load_user_amount(),
+            'CHAT_AMOUNT':db.load_chat_amount(),
+            'OPENAI_USAGE_AMOUNT':db.load_openai_usage(),
+            'USAGE_GRAPH_DATA':json.dumps(db.load_chat_amount_each_month()),
+        }
+        return system_info
+
 class SystemSetting(Resource):
     def __init__(self, *args, **kwargs):
         self.argument = Argument()
@@ -802,6 +832,28 @@ class User(Resource):
         except KeyError:
             return 'Bad Request',400
         return 'OK',200
+
+class UserChatHistory(Resource):
+    def __init__(self, *args, **kwargs):
+        self.db = kwargs['db']
+        self.apiHandler = kwargs['apiHandler']
+        self.api = kwargs['api']
+
+    @api.doc(params={'sid':'sid'})
+    def get(self,UUID):
+        chat_history = self.db.load_chat_detail(UUID,count=1000)
+
+        if not chat_history:
+            return 'Not Found',404
+
+        header = ["messageID", "time", "direction", "text"]
+        chat_history.insert(0,header)
+
+        csv_location = '/tmp/data.csv'
+        with open(csv_location, mode='w', newline='', encoding='utf-8-sig') as file:
+            writer = csv.writer(file)
+            writer.writerows(chat_history)
+        return send_file(csv_location, mimetype='application/csv')
 
 class VideoAPI(Resource):
     def __init__(self, *args, **kwargs):
@@ -891,14 +943,17 @@ api.add_resource(Keyword, '/api/keyword/<string:keyword_id>',resource_class_kwar
 api.add_resource(Story_name, '/api/story_name',resource_class_kwargs={'api':api,'db':db,'apiHandler':apiHandler})
 api.add_resource(Story_sentence, '/api/story_sentence/<string:story_id>',resource_class_kwargs={'api':api,'db':db,'apiHandler':apiHandler})
 api.add_resource(User, '/api/user/<string:UUID>',resource_class_kwargs={'api':api,'db':db,'apiHandler':apiHandler})
+api.add_resource(UserChatHistory, '/api/user_chat_history/<string:UUID>',resource_class_kwargs={'api':api,'db':db,'apiHandler':apiHandler})
 api.add_resource(SystemSetting, '/api/system_setting',resource_class_kwargs={'api':api,'apiHandler':apiHandler})
 api.add_resource(SystemMigrateAPI, '/api/system_migrate',resource_class_kwargs={'api':api,'db':db,'apiHandler':apiHandler})
-api.add_resource(SystemConfigAPI, '/api/system_config',resource_class_kwargs={'api':api,'db':db,'apiHandler':apiHandler})
+api.add_resource(SystemConfigFileAPI, '/api/system_config',resource_class_kwargs={'api':api,'db':db,'apiHandler':apiHandler})
+api.add_resource(SystemInfo, '/api/system_info',resource_class_kwargs={'api':api,'db':db,'apiHandler':apiHandler})
 api.add_resource(ImageAPI, '/api/image/<string:filename>',resource_class_kwargs={'api':api,'db':db,'apiHandler':apiHandler})
 api.add_resource(VideoAPI, '/api/video/<string:filename>',resource_class_kwargs={'api':api,'db':db,'apiHandler':apiHandler})
 api.add_resource(VideoThumbnailAPI, '/api/video_thumbnail/<string:filename>',resource_class_kwargs={'api':api,'db':db,'apiHandler':apiHandler})
 api.add_resource(FileAPI, '/api/file/<string:filename>',resource_class_kwargs={'api':api,'db':db,'apiHandler':apiHandler})
 api.add_resource(LineReachMenu, '/api/line/rich_menu',resource_class_kwargs={'api':api,'argument':argument,'apiHandler':apiHandler,'line_platform':line})
+api.add_resource(LineMembers, '/api/line/members',resource_class_kwargs={'api':api,'db':db,'apiHandler':apiHandler})
 
 '''
 disabled api
