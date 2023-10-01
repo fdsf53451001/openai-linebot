@@ -30,11 +30,11 @@ def setup_logger():
     console_handler.setLevel(logging.WARN)
     console_handler.setFormatter(formatter)
 
-    file_warn_handler = logging.FileHandler('data/system_warn.log')
+    file_warn_handler = logging.FileHandler('data/system_warn.log', mode='a')
     file_warn_handler.setLevel(logging.WARN) 
     file_warn_handler.setFormatter(formatter)
 
-    file_handler = logging.FileHandler('data/system.log')
+    file_handler = logging.FileHandler('data/system.log', mode='w')
     file_handler.setLevel(logging.INFO) 
     file_handler.setFormatter(formatter)
 

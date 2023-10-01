@@ -158,13 +158,14 @@ class MessageHandler:
                                     )
         return msg
 
-    def check_input_rule(self, platform_name, user_id, rule, receive_text):
+    def check_input_rule(self, platform_name, user_id, rule, receive_text) -> bool:
         '''
-        rule : admin defined rule to check this receive_rule
+        rule : admin defined rule to check this receive_text
         receive_text : input from user
         '''
         match = False
-        
+        # notice : an input message can triger multiple rule at the same time
+
         command_content = self.fetch_command_content(rule,'Regex')
         if command_content: # match regex
             regex = re.compile(command_content[2])

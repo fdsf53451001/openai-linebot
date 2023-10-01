@@ -1,0 +1,36 @@
+filebeat.inputs:
+
+# Each - is an input. Most options can be set at the input level, so
+# you can use different inputs for various configurations.
+# Below are the input specific configurations.
+
+- type: log
+
+  # Change to true to enable this input configuration.
+  enabled: true
+
+  # Paths that should be crawled and fetched. Glob based paths.
+  paths:
+    - /bot/data/system.log
+
+multiline.pattern: ^\*\s\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2},\d{3} 
+multiline.negate: true
+multiline.match: after
+
+output.elasticsearch:
+  # Array of hosts to connect to.
+  hosts: ${ES_HOST}
+  # Protocol - either `http` (default) or `https`.
+  protocol: "https"
+
+  # Authentication credentials - either API key or username/password.
+  # api_key: "id:api_key"
+  username: ${ES_USER}
+  password: ${ES_PASS}
+
+setup.ilm.enabled: false
+setup.pack.security.enabled: false
+setup.xpack.graph.enabled: false
+setup.xpack.watcher.enabled: false
+setup.xpack.monitoring.enabled: false
+setup.xpack.reporting.enabled: false

@@ -17,6 +17,8 @@ services:
     volumes:
       - ./data:/opt/grafana
     environment:
+      # - GF_SECURITY_ADMIN_USER=username
+      # - GF_SECURITY_ADMIN_PASSWORD=password
       - GF_INSTALL_PLUGINS=frser-sqlite-datasource
       - GF_RENDERING_SERVER_URL=http://grafana-render:8081/render
       - GF_RENDERING_CALLBACK_URL=http://grafana:8080/
@@ -31,6 +33,8 @@ services:
   flowise:
     image: flowiseai/flowise
     environment:
+        - FLOWISE_USERNAME=username
+        - FLOWISE_PASSWORD=password
         - PORT=3000
         - DATABASE_PATH=/root/.flowise
         - APIKEY_PATH=/root/.flowise
@@ -42,6 +46,13 @@ services:
         - ./data:/bot/data
     command: /bin/sh -c "sleep 3; flowise start"
 
-# volumes:
-#   shared-volume:
-#   flowise-volume:
+  filebeat:
+    image: docker.elastic.co/beats/filebeat-oss:7.10.2
+    volumes:
+      - ./default/filebeat.yml:/usr/share/filebeat/filebeat.yml
+      - ./data:/bot/data
+    environment:
+      - ES_HOST=[hostname]
+      - ES_USER=username
+      - ES_PASS=password
+    command: bash -c "chmod go-w /usr/share/filebeat/filebeat.yml && filebeat -e"
