@@ -12,6 +12,8 @@ filebeat.inputs:
   # Paths that should be crawled and fetched. Glob based paths.
   paths:
     - /bot/data/system.log
+  fields:
+    device_name: ${DEVICE_NAME}
 
 multiline.pattern: ^\*\s\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2},\d{3} 
 multiline.negate: true

@@ -1,1 +1,1 @@
-docker-compose stop
+sudo docker-compose stop

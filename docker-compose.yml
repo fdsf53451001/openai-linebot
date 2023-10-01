@@ -52,6 +52,7 @@ services:
       - ./default/filebeat.yml:/usr/share/filebeat/filebeat.yml
       - ./data:/bot/data
     environment:
+      - DEVICE_NAME=[device_name]
       - ES_HOST=[hostname]
       - ES_USER=username
       - ES_PASS=password
