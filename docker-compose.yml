@@ -8,6 +8,8 @@ services:
     volumes:
       - ./data:/bot/data
       - ./resources:/bot/resources
+    environment:
+      - SYSTEM_PORT=80
 
   grafana:
     image: openai-linebot-grafana:latest
@@ -27,8 +29,8 @@ services:
 
   grafana-render:
     image: grafana/grafana-image-renderer:latest
-    ports:
-      - 8081:8081
+    # ports:
+    #   - 8081:8081
 
   flowise:
     image: flowiseai/flowise

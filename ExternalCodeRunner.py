@@ -3,7 +3,7 @@ import subprocess
 import logging
 
 class ExternalCodeRunner():
-    def check_format(self, msg, platform_name, user_id, send_to_user) -> str:
+    def check_format(self, platform_name, user_id, msg, send_to_user) -> str:
 
         command_content = self.fetch_command_content(msg, 'ExtCode')
         if not command_content:

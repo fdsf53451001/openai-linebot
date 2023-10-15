@@ -65,12 +65,15 @@
     $MESSAGE_DATA = JSON.parse($MESSAGE_DATA);
      
     function timestamp_to_str_format(timestamp){
-        date = new Date(timestamp);
+        var date = new Date(timestamp);
         var year = date.getFullYear();
         var month = ("0" + (date.getMonth() + 1)).slice(-2);
-        var date = ("0" + date.getDate()).slice(-2);
+        var day = ("0" + date.getDate()).slice(-2);
+        var hours = ("0" + date.getHours()).slice(-2);
+        var minutes = ("0" + date.getMinutes()).slice(-2);
+        var seconds = ("0" + date.getSeconds()).slice(-2);
 
-        return "" + year + "-" + month + "-" + date;
+        return year + "/" + month + "/" + day + " " + hours + ":" + minutes + ":" + seconds;
     }
 
     function updateTable() {
@@ -81,6 +84,11 @@
             row.insertCell(0).innerHTML = timestamp_to_str_format($MESSAGE_DATA[i][0]);
             row.insertCell(1).innerHTML = $MESSAGE_DATA[i][1].slice(-5);
             row.insertCell(2).innerHTML = $MESSAGE_DATA[i][2];
+            if($MESSAGE_DATA[i][3]=="0"){
+                $MESSAGE_DATA[i][3] = "system";
+            }else{
+                $MESSAGE_DATA[i][3] = "user";
+            }
             row.insertCell(3).innerHTML = $MESSAGE_DATA[i][3];
             row.insertCell(4).innerHTML = $MESSAGE_DATA[i][4];
         }

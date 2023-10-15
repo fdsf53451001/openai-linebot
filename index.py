@@ -44,7 +44,7 @@ def setup_logger():
 
 setup_logger()
 
-BUILD_VERSION = 'v20231001'
+BUILD_VERSION = 'v20231015'
 
 '''
 init

@@ -28,7 +28,7 @@
                         <th>photo</th>
                         <th>name</th>
                         <th>usage</th>
-                        <th>last_update</th>
+                        <th>created</th>
                         <th>tmp</th>
                         <th>history</th>
                     </tr>
@@ -64,12 +64,15 @@
     $USERS_DATA = JSON.parse($USERS_DATA);
 
     function timestamp_to_str_format(timestamp){
-        date = new Date(timestamp);
+        var date = new Date(timestamp);
         var year = date.getFullYear();
         var month = ("0" + (date.getMonth() + 1)).slice(-2);
-        var date = ("0" + date.getDate()).slice(-2);
+        var day = ("0" + date.getDate()).slice(-2);
+        var hours = ("0" + date.getHours()).slice(-2);
+        var minutes = ("0" + date.getMinutes()).slice(-2);
+        var seconds = ("0" + date.getSeconds()).slice(-2);
 
-        return "" + year + "-" + month + "-" + date;
+        return year + "/" + month + "/" + day + " " + hours + ":" + minutes + ":" + seconds;
     }
 
     function updateTable() {
