@@ -102,6 +102,9 @@ platform_info = {
 
 sc = SystemMigrate(db, platform_info)
 
+app = Flask(__name__)
+api = Api(app, version='1.0', title='ChatPlatform API', description='ChatPlatform API for keywords, Story, and other data.', doc='/swagger')
+
 def run_chat_analyze():
     # doing talk emotion analyze, this will take a while
     # just for test purpose
@@ -118,12 +121,10 @@ def run_chat_analyze():
 if argument.read_conf('sentiment_analysis','auto_analyze_msg_with_openai') == 'true':
     run_chat_analyze()
 
+
 '''
 page definition
 '''
-
-app = Flask(__name__)
-api = Api(app, version='1.0', title='ChatPlatform API', description='ChatPlatform API for keywords, Story, and other data.', doc='/swagger')
 
 # domain root
 @app.route('/')
