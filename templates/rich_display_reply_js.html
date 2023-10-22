@@ -287,6 +287,7 @@
 
     button_templates_page = []
     function init_button_templates_page(){
+        var action_column_amount = 3
         button_templates_page = []
         for (let i = 0; i < 4; i++){
             button_templates_page.push([])
@@ -294,27 +295,42 @@
     }
     init_button_templates_page()
 
+    function get_button_templates_action_amount(){
+        action_amount = 1
+        if ($('#buttons_templates_action2').val() != '不需要此按鈕則不需修改'){
+            action_amount += 1
+        }
+        if ($('#buttons_templates_action3').val() != '不需要此按鈕則不需修改'){
+            action_amount += 1
+        }
+        console.log(action_amount)
+        return action_amount
+    }
+
     function on_button_templates_next_page(){
-        let pageid = parseInt($('#button-templates-pageid').html())-1
-        if (pageid == 3){
+        let pageid = parseInt($('#button-templates-pageid').html())-1 //0-3
+        if (pageid == 0){
+            action_column_amount = get_button_templates_action_amount()
+        }else if (pageid == 3){
             return
         }
-        if(!save_current_button_templates_page()){
-            return
-        }
-        clear_button_templates_fields()
+        if (!save_current_button_templates_page()){return}
+        
+        clear_button_templates_fields(action_column_amount)
         $('#button-templates-pageid').html(pageid+2).change()
     }
 
     function on_button_templates_prev_page(){
-        let pageid = parseInt($('#button-templates-pageid').html())-1
+        let pageid = parseInt($('#button-templates-pageid').html())-1 //0-3
         if (pageid == 0){
             return
+        }else if (pageid == 1){
+            action_column_amount = 3
         }
         if(!save_current_button_templates_page()){
             return
         }
-        clear_button_templates_fields()
+        clear_button_templates_fields(action_column_amount)
         $('#button-templates-pageid').html(pageid).change()
     }
 
@@ -341,8 +357,12 @@
             return false
         }
         if (submit_data['action1'] ==''){
-            alert('請至少輸入一個按鈕！')
+            alert('請至少輸入一個動作按鈕！')
             return false
+        }
+        if(submit_data['action1'].length>20 || submit_data['action2'].length>20 || submit_data['action3'].length>20){
+            alert('按鈕字數不能超過 20 個字！')
+            return
         }
         if (submit_data['action2'] =='不需要此按鈕則不需修改'){
             delete submit_data['action2']
@@ -355,7 +375,7 @@
         return true
     }
 
-    function clear_button_templates_fields(){
+    function clear_button_templates_fields(action_column_amount){
         $('#buttons_templates_title').val('')
         $('#buttons_templates_text').val('')
         $('#buttons_templates_action1').val('')
@@ -365,6 +385,20 @@
         $('#file-input-buttons-templates').val('')
         $('#buttons-templates-upload-status').html('請上傳檔案。')
         $('#image_upload_result').html('')
+
+        if(action_column_amount == 1){
+            $('#buttons_templates_action1').removeAttr('disabled')
+            $('#buttons_templates_action2').attr('disabled', 'disabled')
+            $('#buttons_templates_action3').attr('disabled', 'disabled')
+        }else if(action_column_amount == 2){
+            $('#buttons_templates_action1').removeAttr('disabled')
+            $('#buttons_templates_action2').removeAttr('disabled')
+            $('#buttons_templates_action3').attr('disabled', 'disabled')
+        }else if(action_column_amount == 3){
+            $('#buttons_templates_action1').removeAttr('disabled')
+            $('#buttons_templates_action2').removeAttr('disabled')
+            $('#buttons_templates_action3').removeAttr('disabled')
+        }
     }
 
     function on_button_templates_send(){

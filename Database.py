@@ -101,7 +101,7 @@ class database:
     ### talk analyze
     
     def load_chat_start_index_group_by_time_gap(self, time_gap=60): # sec
-        result = self.deal_sql_request('SELECT messageId,time, (time/1000) as ts   FROM Message GROUP BY ts-ts%(?)', (time_gap,))
+        result = self.deal_sql_request('SELECT messageId,time, (time/1000) as ts FROM Message GROUP BY ts-ts%(?)', (time_gap,))
         return result
 
     def load_chats_by_start_index_limit_time(self, s_index, t_start, duration=60):
@@ -115,6 +115,16 @@ class database:
     def load_chat_session(self):
         result = self.deal_sql_request('SELECT sessionId, messageId,time,analyze FROM Chat_session')
         return result
+
+    def load_chat_session_detail(self, chat_session_time_gap=60):
+        chat_sessions = self.deal_sql_request('SELECT sessionId, messageId,time,analyze FROM Chat_session ORDER BY time DESC LIMIT 100')
+        for i, chat_session in enumerate(chat_sessions):
+            user_id = self.get_userId_by_messageId(chat_session[1])  
+            user_name = self.check_user(user_id)[0][3]
+            chat_content = self.load_chats_by_start_index_limit_time(chat_session[1], chat_session[2], chat_session_time_gap)
+            chat_content = [c[1] for c in chat_content]
+            chat_sessions[i] = (chat_session[0], chat_session[1], user_name, chat_session[2], chat_content, chat_session[3])
+        return chat_sessions
 
     def load_chat_session_no_analyze(self):
         result = self.deal_sql_request('SELECT sessionId, messageId,time FROM Chat_session WHERE analyze IS NULL')
@@ -203,7 +213,7 @@ class database:
         return result
 
     def check_user(self, user_id):
-        result = self.deal_sql_request('SELECT UUID,last_update_time,ban FROM User WHERE UUID=?', (user_id,))
+        result = self.deal_sql_request('SELECT UUID,last_update_time,ban,name FROM User WHERE UUID=?', (user_id,))
         return result
 
     def add_new_user(self, user_id, platform, name, photo, last_update_time):
@@ -241,6 +251,10 @@ class database:
         result = self.deal_sql_request('UPDATE User SET tmp=? WHERE UUID=?', (json.dumps(d), user_id))
         return result
 
+    def get_userId_by_messageId(self, messageId):
+        result = self.deal_sql_request('SELECT userId FROM Message WHERE messageId=?', (messageId,))
+        return result[0][0]
+
     ### System Logs
 
     def load_system_logs(self):
@@ -261,5 +275,5 @@ class database:
 
 if __name__ == '__main__':
     db = database('data/chat.db',threading.Lock())
-    data = db.load_chat_detail('123')
+    data = db.load_chat_session_detail()
     print(data)

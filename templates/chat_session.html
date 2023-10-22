@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{%block PAGE_NAME%}ChatGPT - Message{%endblock%}
+{%block PAGE_NAME%}ChatGPT - Chat Session{%endblock%}
 
 {%block PAGEUP_SCRIPT%}
 <!-- Custom styles for this page -->
@@ -9,24 +9,37 @@
 
 {%block PAGE%}
 <!-- Page Heading -->
-<h1 class="h3 mb-2 text-gray-800">即時訊息</h1>
-<!-- <p class="mb-4">關鍵字模式支持正規表達式，請輸入"[Regex] 表達式內容"。支持自定義程式執行，請輸出"[ExtCode] 程式"。</p>
-<p class="mb-4">請參考<a href="https://transbiz.com.tw/regex-regular-expression-ga-%E6%AD%A3%E8%A6%8F%E8%A1%A8%E7%A4%BA%E5%BC%8F" target="_blank">Regex規則</a>。為了系統穩定，請使用<a href="https://www.regextester.com" target="_blank">外部網站測試Regex</a>，再填入本系統。</p> -->
+<h1 class="h3 mb-2 text-gray-800">對話歷程分析</h1>
+
+<br/>
+
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">執行分析</h6>
+    </div>
+    <div class="card-body">
+        <p>對話歷程需要進行情感分析，會產生OpenAI費用，並花費許多時間!</p>
+        <button type="button" class="btn btn-danger" onclick="run_chat_session_analyze()">執行分析</button>
+    </div>
+</div>
+
+
 <!-- DataTales Example -->
 <div class="card shadow mb-4">
     <div class="card-header py-3">
-        <h6 class="m-0 font-weight-bold text-primary">訊息列表</h6>
+        <h6 class="m-0 font-weight-bold text-primary">對話歷程</h6>
     </div>
     <div class="card-body">
         <div class="table-responsive">
             <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
                 <thead>
                     <tr>
-                        <th>time</th>
-                        <th>UUID</th>
-                        <th>name</th>
-                        <th>direction</th>
-                        <th>text</th>
+                        <th>SID</th>
+                        <th>MID</th>
+                        <th>User</th>
+                        <th>Time</th>
+                        <th>Chats</th>
+                        <th>analyze</th>
                     </tr>
                 </thead>
                 <tbody id="table-content">
@@ -35,6 +48,8 @@
         </div>
     </div>
 </div>
+
+
 {%endblock%}
 
 {%block PAGEDOWN_SCRIPT%}
@@ -54,8 +69,8 @@
 <script src="{{url_for('static',filename='js/demo/datatables-demo.js')}}"></script>
 
 <script>
-    $MESSAGE_DATA = {{ PASS_DATA['MESSAGE_DATA'] | tojson | safe}};
-    $MESSAGE_DATA = JSON.parse($MESSAGE_DATA);
+    $CHAT_SESSION_DATA = {{ PASS_DATA['CHAT_SESSION_DATA'] | tojson | safe}};
+    $CHAT_SESSION_DATA = JSON.parse($CHAT_SESSION_DATA);
      
     function timestamp_to_str_format(timestamp){
         var date = new Date(timestamp);
@@ -72,22 +87,32 @@
     function updateTable() {
         var table = document.getElementById("table-content");
         // table.innerHTML = "";
-        for (let i = 0; i < $MESSAGE_DATA.length; i++) {
+        for (let i = 0; i < $CHAT_SESSION_DATA.length; i++) {
             let row = table.insertRow(i);
-            row.insertCell(0).innerHTML = timestamp_to_str_format($MESSAGE_DATA[i][0]);
-            row.insertCell(1).innerHTML = $MESSAGE_DATA[i][1].slice(-5);
-            row.insertCell(2).innerHTML = $MESSAGE_DATA[i][2];
-            if($MESSAGE_DATA[i][3]=="0"){
-                $MESSAGE_DATA[i][3] = "system";
-            }else{
-                $MESSAGE_DATA[i][3] = "user";
-            }
-            row.insertCell(3).innerHTML = $MESSAGE_DATA[i][3];
-            row.insertCell(4).innerHTML = $MESSAGE_DATA[i][4];
+            row.insertCell(0).innerHTML = $CHAT_SESSION_DATA[i][0];
+            row.insertCell(1).innerHTML = $CHAT_SESSION_DATA[i][1];
+            row.insertCell(2).innerHTML = $CHAT_SESSION_DATA[i][2];
+            row.insertCell(3).innerHTML = timestamp_to_str_format($CHAT_SESSION_DATA[i][3]);
+            row.insertCell(4).innerHTML = $CHAT_SESSION_DATA[i][4];
+            row.insertCell(5).innerHTML = $CHAT_SESSION_DATA[i][5];
         }
+    }
+
+    function run_chat_session_analyze(){
+        $.ajax({
+            url: "/api/chat_session?sid={{PASS_DATA['SID']}}",
+            type: "POST",
+            success: function (data) {
+                alert("對話分析執行緩慢，可先進行其他操作，完成後會自動更新!");
+            },
+            error: function (err) {
+                alert(err.responseText);
+            }
+        });
     }
 
     updateTable();
 </script>
+
 
 {%endblock%}

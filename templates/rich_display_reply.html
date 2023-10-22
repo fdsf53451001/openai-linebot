@@ -15,12 +15,12 @@
             <div style="display: inline-block;">
                 <a>關鍵字</a>
                     <button type="button" class="btn btn-outline-primary btn-sm" onmousedown="toggle_reply_mode('regex')">
-                        Regex
+                        正規表達式
                     </button>                    
                 <br/>
                 <a>劇本選項</a>
                     <button type="button" class="btn btn-outline-primary btn-sm" onmousedown="toggle_reply_mode('regex')">
-                        Regex
+                        正規表達式
                     </button>
                     <button type="button" class="btn btn-outline-primary btn-sm" onmousedown="toggle_reply_mode('save_user_variable')">
                         儲存使用者資料
@@ -31,19 +31,19 @@
                 <br/>
                 <a>關鍵字/劇本輸出</a>
                     <button type="button" class="btn btn-outline-primary btn-sm" onmousedown="toggle_reply_mode('image')">
-                        Image
+                        圖像
                     </button>
                     <!-- <button type="button" class="btn btn-outline-primary btn-sm" onmousedown="toggle_reply_mode('audio')">
                         Audio
                     </button> -->
                     <button type="button" class="btn btn-outline-primary btn-sm" onmousedown="toggle_reply_mode('video')">
-                        Video
+                        影片
                     </button>
                     <button type="button" class="btn btn-outline-primary btn-sm" onmousedown="toggle_reply_mode('buttons_template')">
-                        Buttons Template
+                        單頁圖文訊息
                     </button>
                     <button type="button" class="btn btn-outline-primary btn-sm" onmousedown="toggle_reply_mode('buttons_templates')">
-                        Buttons Templates
+                        多頁圖文訊息
                     </button>
                     <button type="button" class="btn btn-outline-primary btn-sm" onmousedown="toggle_reply_mode('load_user_variable')">
                         讀取使用者資料
@@ -151,7 +151,6 @@
 
             <div id="buttons_template_reply_content" class="reply_content">
                 <h3>Buttons Template</h3>
-                <p>請注意! 回覆按鈕字數不能超過20!</p>
                 <form id="upload-form-buttons-template" enctype="multipart/form-data">
                     <input type="file" name="file" id="file-input-buttons-template">
                     <input type="submit" value="上傳圖片">
@@ -219,7 +218,7 @@
                 <div class="badge bg-primary text-wrap" id="button-templates-pageid">1</div>
                 <button type="button" id="buttons-templates-send" class="btn btn-outline-primary btn-sm" onclick="on_button_templates_next_page()">></button>
 
-                <button type="button" id="buttons-templates-send" class="btn btn-primary btn-sm"  style="margin-left: 10px;" onclick="on_button_templates_send()">送出</button>
+                <button type="button" id="buttons-templates-send" class="btn btn-primary btn-sm"  style="margin-left: 10px;" onclick="on_button_templates_send()">送出所有頁面</button>
             </div>
         </div>
         

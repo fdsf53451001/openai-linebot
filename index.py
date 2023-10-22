@@ -44,7 +44,7 @@ def setup_logger():
 
 setup_logger()
 
-BUILD_VERSION = 'v20231015'
+BUILD_VERSION = 'v20231022'
 
 '''
 init
@@ -88,13 +88,6 @@ chatgpt = ChatGPT(db,argument)
 messageHandler = MessageHandler(db,chatgpt)
 apiHandler = APIHandler(db)
 
-# doing talk emotion analyze, this will take a while
-# just for test purpose
-if argument.read_conf('openai','analyze_msg_with_openai') == 'true':
-    chatAnalyze = ChatAnalyze(db, chatgpt)
-    chatAnalyze.search_chat_session()
-    chatAnalyze.analyze_with_openai()
-
 if argument.read_conf('platform','line') == 'true':
     from service.chat_platform.line_platform import line_platform
     line = line_platform(argument, messageHandler)
@@ -108,6 +101,22 @@ platform_info = {
 }
 
 sc = SystemMigrate(db, platform_info)
+
+def run_chat_analyze():
+    # doing talk emotion analyze, this will take a while
+    # just for test purpose
+
+    def _chat_analyze():
+        chatAnalyze = ChatAnalyze(db, chatgpt, argument)
+        chatAnalyze.search_chat_session()
+        chatAnalyze.analyze_with_openai()
+        logging.warning('Chat Session Analyze Done!')
+    
+    thread = threading.Thread(target=_chat_analyze)
+    thread.start()
+
+if argument.read_conf('sentiment_analysis','auto_analyze_msg_with_openai') == 'true':
+    run_chat_analyze()
 
 '''
 page definition
@@ -251,6 +260,21 @@ def user_list():
     PASS_DATA.update(platform_info)
     return render_template('user_list.html',PASS_DATA=PASS_DATA)
 
+@app.route('/chat_session')
+def chat_session():
+    user_config = apiHandler.check_request_username(request)
+    if not user_config:
+        return redirect(url_for('login'))
+    else:
+        (sid,username) = user_config
+    
+    PASS_DATA = {'USER_NAME':username,
+                 'SID':sid,
+                 'CHAT_SESSION_DATA':json.dumps(db.load_chat_session_detail())
+                }
+    PASS_DATA.update(platform_info)
+    return render_template('chat_session.html',PASS_DATA=PASS_DATA)
+
 @app.route('/talk_analyze')
 def talk_analyze():
     user_config = apiHandler.check_request_username(request)
@@ -378,6 +402,33 @@ def page_not_found(error):
 API resources
 '''
 
+class ChatSessionAPI(Resource):
+    def __init__(self, *args, **kwargs):
+        self.argument = Argument()
+        self.apiHandler = kwargs['apiHandler']  
+        self.db = kwargs['db']
+        self.api = kwargs['api']
+    
+    @api.doc(params={'sid':'sid'})
+    def get(self):
+        user_config = self.apiHandler.check_request_username(request)
+        if not user_config:
+            return 'Not Authorized',401
+        
+        return json.dumps(self.db.load_chat_session_detail())
+
+    @api.doc(params={'sid':'sid'})
+    def post(self):
+        # perform chat analyze
+        user_config = self.apiHandler.check_request_username(request)
+        if not user_config:
+            return 'Not Authorized',401
+        
+        run_chat_analyze()
+        return 'OK',200
+
+
+
 class Keywords(Resource):    
     def __init__(self, *args, **kwargs):
         self.db = kwargs['db']
@@ -500,8 +551,9 @@ class ImageAPI(Resource):
         
     @api.doc(params={'sid':'sid'})
     def get(self, filename):
-        # Logic to fetch or generate the image
-        # Replace this with your actual image retrieval code
+        user_config = self.apiHandler.check_request_username(request)
+        if not user_config:
+            return 'Not Authorized',401
         filename = self.baseURL + filename
 
         if os.path.isfile(filename):
@@ -753,6 +805,10 @@ class SystemInfo(Resource):
     
     @api.doc(params={'sid':'sid'})
     def get(self):
+        user_config = self.apiHandler.check_request_username(request)
+        if not user_config:
+            return 'Not Authorized',401
+        
         system_info = {
             'USER_AMOUNT':db.load_user_amount(),
             'CHAT_AMOUNT':db.load_chat_amount(),
@@ -841,6 +897,10 @@ class UserChatHistory(Resource):
 
     @api.doc(params={'sid':'sid'})
     def get(self,UUID):
+        user_config = self.apiHandler.check_request_username(request)
+        if not user_config:
+            return 'Not Authorized',401
+        
         chat_history = self.db.load_chat_detail(UUID,count=1000)
 
         if not chat_history:
@@ -948,6 +1008,7 @@ api.add_resource(SystemSetting, '/api/system_setting',resource_class_kwargs={'ap
 api.add_resource(SystemMigrateAPI, '/api/system_migrate',resource_class_kwargs={'api':api,'db':db,'apiHandler':apiHandler})
 api.add_resource(SystemConfigFileAPI, '/api/system_config',resource_class_kwargs={'api':api,'db':db,'apiHandler':apiHandler})
 api.add_resource(SystemInfo, '/api/system_info',resource_class_kwargs={'api':api,'db':db,'apiHandler':apiHandler})
+api.add_resource(ChatSessionAPI, '/api/chat_session',resource_class_kwargs={'api':api,'db':db,'apiHandler':apiHandler})
 api.add_resource(ImageAPI, '/api/image/<string:filename>',resource_class_kwargs={'api':api,'db':db,'apiHandler':apiHandler})
 api.add_resource(VideoAPI, '/api/video/<string:filename>',resource_class_kwargs={'api':api,'db':db,'apiHandler':apiHandler})
 api.add_resource(VideoThumbnailAPI, '/api/video_thumbnail/<string:filename>',resource_class_kwargs={'api':api,'db':db,'apiHandler':apiHandler})
