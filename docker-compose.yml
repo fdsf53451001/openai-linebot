@@ -59,3 +59,11 @@ services:
       - ES_USER=username
       - ES_PASS=password
     command: bash -c "filebeat -e -strict.perms=false"
+
+  postgres:
+    image: postgres
+    volumes:
+      - ./data/postgres:/var/lib/postgresql/data
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: postgres

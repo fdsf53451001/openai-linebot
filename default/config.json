@@ -1,0 +1,73 @@
+{
+    "user" : {
+        "user_list" : [["username", "", "$2b$12$cZ9TYzX004kcEEtdIj0lm.FCW5MwdsuCmwEWFAFuDVcukKVFVtjwq", ""]]
+    },
+    "platform" : {
+        "line" : false,
+        "discord" : false
+    },
+    "system" : {
+        "system_domain" : "None",
+        "system_port" : 80,
+        "grafana_domain" : "http://grafana:8080",
+        "use_local_certificates" : false,
+        "platform_name" : "testbot"
+    },
+    "key" : {
+        "openai_key" : "None",
+        "line_channel_access_token" : "None",
+        "line_channel_secret" : "None",
+        "discord_token" : "None"
+    },
+    "function" : {
+        "default_reply" : false,
+        "default_reply_word" : "你好，目前服務不可用",
+        "keyword_reply" : true,
+        "story_reply" : true,
+        "flowise_reply" : false,
+        "chatgpt_reply" : false,
+        "send_alarm_msg" : true
+    },
+    "line" : {
+        "richmenu_image_1" : "None",
+        "richmenu_json_1" : "None",
+        "richmenu_id_1" : "None",
+        "richmenu_image_2" : "None",
+        "richmenu_json_2" : "None",
+        "richmenu_id_2" : "None",
+        "richmenu_image_3" : "None",
+        "richmenu_json_3" : "None",
+        "richmenu_id_3" : "None"
+    },
+    "openai" : {
+        "model" : "gpt-3.5-turbo",
+        "chat_temperature" : 0.7,
+        "max_tokens" : 300,
+        "prompt_prefix" : "None",
+        "openai_warning_message" : false,
+        "openai_timeout_warning_sec" : 25,
+        "openai_timeout_cut_sec" : 30
+    },
+    "flowise" : {
+        "flowise_api_url" : "http://flowise:3000/put_your_api_here"
+    },
+    "grafana" : {
+        "image_amount" : 4,
+        "image_url" : ["/render/d-solo/ac46c35c-3b78-4a73-83db-a30b83580096/main?orgId=1&from=1687473271716&to=1687494871716&theme=light&panelId=1&width=450&height=200","/render/d-solo/ac46c35c-3b78-4a73-83db-a30b83580096/main?orgId=1&from=1687473304029&to=1687494904029&theme=light&panelId=3&width=450&height=200","/render/d-solo/ac46c35c-3b78-4a73-83db-a30b83580096/main?orgId=1&from=1687473352070&to=1687494952070&theme=light&panelId=2&width=450&height=200","/render/d-solo/ac46c35c-3b78-4a73-83db-a30b83580096/main?orgId=1&from=1687473374136&to=1687494974136&theme=light&panelId=4&width=450&height=200"]
+    },
+    "sentiment_analysis" : {
+        "auto_analyze_msg_with_openai" : false,
+        "chat_session_time_gap" : 300
+    },
+    "db" : {
+        "_comment": "sqlite or postgreSQL",
+        "type": "postgreSQL",
+        "sqlite_path": "data/chat.db",
+        "pg_host": "postgres",
+        "pg_port": 5432,
+        "pg_name": "chat",
+        "pg_user": "postgres",
+        "pg_password": "postgres"
+    }
+
+}

@@ -194,19 +194,19 @@ class MessageHandler:
 
         reply_engine.append(self.check_restart_command)
 
-        if self.argument.read_conf('function','default_reply') == 'true':
+        if self.argument.read_conf('function','default_reply') == True:
             reply_engine.append(self.check_default_reply)
 
-        if self.argument.read_conf('function','keyword_reply') == 'true':
+        if self.argument.read_conf('function','keyword_reply') == True:
             reply_engine.append(self.keyword_hold)
                      
-        if self.argument.read_conf('function','story_reply') == 'true':
+        if self.argument.read_conf('function','story_reply') == True:
             reply_engine.append(self.story_hold)  
 
-        if self.argument.read_conf('function','flowise_reply') == 'true':
+        if self.argument.read_conf('function','flowise_reply') == True:
             reply_engine.append(self.flowise_hold)
 
-        if self.argument.read_conf('function','chatgpt_reply') == 'true':
+        if self.argument.read_conf('function','chatgpt_reply') == True:
             reply_engine.append(self.chatgpt_hold)
 
         reply_engine.append(self.fallback_reply)
@@ -308,7 +308,7 @@ class MessageHandler:
         timeout_config = {
             'timeout_warning_sec' : self.argument.read_conf('openai','10'),
             'timeout_cut_sec' : self.argument.read_conf('openai','20'),
-            'enable_warning_message' : self.argument.read_conf('openai','false')
+            'enable_warning_message' : self.argument.read_conf('openai','openai_warning_message')
         }
         text_send_message = self._llm_hold(platform_name, user_id, self._flowuse_handler, 'Flowise', timeout_config)
         return ReplyMessage(True, 6, text_send_message)
@@ -337,7 +337,7 @@ class MessageHandler:
         while thread.is_alive() and time.time()-s_time < int(timeout_warning):
             pass    # waiting reply
         
-        if thread.is_alive() and timeout_config['enable_warning_message']=='true': # send warning
+        if thread.is_alive() and timeout_config['enable_warning_message']==True: # send warning
             self.send_to_user(platform_name, user_id, "等待回應中...")
             logging.warning(handler_name+" reply timeout for "+timeout_warning+" seconds!")
         
@@ -478,7 +478,7 @@ class MessageHandler:
         if platform_name=='command_line':
             return
         
-        if not (self.argument.read_conf('function','send_alarm_msg')=='true'):
+        if not (self.argument.read_conf('function','send_alarm_msg')==True):
             return
         
         self.platforms[platform_name].send_to_user(user_id, msg)

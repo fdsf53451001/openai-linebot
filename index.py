@@ -23,7 +23,7 @@ from service.llm.Chatgpt import ChatGPT
 def setup_logger():
     logger = logging.getLogger()
     logger.setLevel(logging.DEBUG)
-
+    
     formatter = logging.Formatter('* %(asctime)s %(levelname)s %(message)s')
 
     console_handler = logging.StreamHandler()
@@ -55,7 +55,7 @@ def check_environment():
     process = subprocess.Popen("sudo timedatectl set-timezone Asia/Taipei", shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
     # setup data folder
-    folders = ['data','data/flowise','data/cert','static/grafana','resources','resources/image','resources/video','resources/video/img','resources/files']
+    folders = ['data','data/flowise','data/cert','data/postgres','static/grafana','resources','resources/image','resources/video','resources/video/img','resources/files']
     for folder in folders:
         os.makedirs(folder, exist_ok=True)
 
@@ -64,13 +64,13 @@ def check_environment():
     #     open('data/system.log', 'a').close()
 
     # create config file
-    if not os.path.isfile('data/config.conf'):
-        shutil.copy('default/config.conf', 'data/config.conf')
+    if not os.path.isfile('data/config.json'):
+        shutil.copy('default/config.json', 'data/config.json')
     argument = Argument()
 
-    # create database file
-    if not os.path.isfile(argument.read_conf('sqlite','db_path')):
-        shutil.copy('default/chat.db', argument.read_conf('sqlite','db_path'))
+    # create sqlite database file
+    if argument.read_conf('db','type')=='sqlite' and not os.path.isfile(argument.read_conf('db','sqlite_path')):
+        shutil.copy('default/chat.db', argument.read_conf('db','sqlite_path'))
     
     # check environmental variable
     if os.environ.get('SYSTEM_PORT'):
@@ -82,13 +82,13 @@ argument = check_environment()
 
 # set threading lock prevent sqlite error
 db_lock = threading.Lock()
-db = database(argument.read_conf('sqlite','db_path'),db_lock)
+db = database(argument,db_lock)
 
 chatgpt = ChatGPT(db,argument)
 messageHandler = MessageHandler(db,chatgpt)
 apiHandler = APIHandler(db)
 
-if argument.read_conf('platform','line') == 'true':
+if argument.read_conf('platform','line') == True:
     from service.chat_platform.line_platform import line_platform
     line = line_platform(argument, messageHandler)
 else:
@@ -118,7 +118,7 @@ def run_chat_analyze():
     thread = threading.Thread(target=_chat_analyze)
     thread.start()
 
-if argument.read_conf('sentiment_analysis','auto_analyze_msg_with_openai') == 'true':
+if argument.read_conf('sentiment_analysis','auto_analyze_msg_with_openai') == True:
     run_chat_analyze()
 
 
@@ -306,11 +306,11 @@ def talk_analyze():
 
 #     PASS_DATA = {'USER_NAME':username,
 #                  'SID':sid,
-#                  'DEFAULT_REPLY': "checked" if argument.read_conf('function','default_reply')=='true' else "",
+#                  'DEFAULT_REPLY': "checked" if argument.read_conf('function','default_reply')==True else "",
 #                  'DEFAULT_REPLY_WORD': argument.read_conf('function','default_reply_word'),
-#                  'KEYWORD_REPLY': "checked" if argument.read_conf('function','keyword_reply')=='true' else "",
-#                  'STORY_REPLY': "checked" if argument.read_conf('function','story_reply')=='true' else "",
-#                  'CHATGPT_REPLY': "checked" if argument.read_conf('function','chatgpt_reply')=='true' else ""
+#                  'KEYWORD_REPLY': "checked" if argument.read_conf('function','keyword_reply')==True else "",
+#                  'STORY_REPLY': "checked" if argument.read_conf('function','story_reply')==True else "",
+#                  'CHATGPT_REPLY': "checked" if argument.read_conf('function','chatgpt_reply')==True else ""
 #                 }
 #     PASS_DATA.update(platform_info)
 #     return render_template('reply_setting.html',PASS_DATA=PASS_DATA)
@@ -325,11 +325,11 @@ def api_setting():
 
     PASS_DATA = {'USER_NAME':username,
                  'SID':sid,
-                #  'DEFAULT_REPLY': "checked" if argument.read_conf('function','default_reply')=='true' else "",
+                #  'DEFAULT_REPLY': "checked" if argument.read_conf('function','default_reply')==True else "",
                 #  'DEFAULT_REPLY_WORD': argument.read_conf('function','default_reply_word'),
-                #  'KEYWORD_REPLY': "checked" if argument.read_conf('function','keyword_reply')=='true' else "",
-                #  'STORY_REPLY': "checked" if argument.read_conf('function','story_reply')=='true' else "",
-                #  'CHATGPT_REPLY': "checked" if argument.read_conf('function','chatgpt_reply')=='true' else ""
+                #  'KEYWORD_REPLY': "checked" if argument.read_conf('function','keyword_reply')==True else "",
+                #  'STORY_REPLY': "checked" if argument.read_conf('function','story_reply')==True else "",
+                #  'CHATGPT_REPLY': "checked" if argument.read_conf('function','chatgpt_reply')==True else ""
                 }
     PASS_DATA.update(platform_info)
     return render_template('api_setting.html',PASS_DATA=PASS_DATA)
@@ -452,7 +452,7 @@ class Keywords(Resource):
             return 'Not Authorized',401
         request_argument = request.get_json()
         try:
-            if request_argument['enable']!='0' and request_argument['enable']!='1':
+            if request_argument['enable']!='0' and request_argument['enable']!='1' and not request_argument['keyword'] and not request_argument['reply']:
                 return 'Bad Request',400
             result = self.db.add_keyword(request_argument['enable'],request_argument['keyword'],request_argument['reply'],request_argument['note'])
             if result == None:
@@ -719,8 +719,8 @@ class Story_sentence(Resource):
                     story_content[j][1] = sentencce_id
 
     def _delete_story(self, story_id):
-        self.db.delete_storyname_id(story_id)
         self.db.delete_storysentence_id(story_id)
+        self.db.delete_storyname_id(story_id)
 
 class SystemConfigFileAPI(Resource):
     def __init__(self, *args, **kwargs):
@@ -830,9 +830,7 @@ class SystemSetting(Resource):
         if not user_config:
             return 'Not Authorized',401
         try:
-            with open('data/config.conf','r') as f:
-                configs = f.read()
-                return configs
+            return argument.read_whole_conf()
         except:
             return 'Internal Server Error',500
     
@@ -849,10 +847,7 @@ class SystemSetting(Resource):
         if request_argument['settings']=='':
             return 'Bad Request',400
         else:
-            with open('data/config.conf','w') as f:
-                f.write(request_argument['settings'])
-            self.apiHandler.reload_password_hash()
-            # self._restart_program()
+            argument.set_whole_conf(request_argument['settings'])
             return 'OK',200
 
     def _restart_program(self):
@@ -1025,7 +1020,7 @@ disabled api
 if __name__ == "__main__":
     port = int(argument.read_conf('system','system_port'))
     print('SERVER START UP !')
-    if argument.read_conf('system','use_local_certificates') == 'true':
+    if argument.read_conf('system','use_local_certificates') == True:
         app.run(host='0.0.0.0',port=port,ssl_context=('data/cert/cert.pem', 'data/cert/privkey.pem'))
     else:
         serve(app, host='0.0.0.0', port=port, threads=10)

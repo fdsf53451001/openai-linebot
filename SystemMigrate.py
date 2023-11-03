@@ -75,7 +75,7 @@ class SystemMigrate:
 
         finally:
             if self.db:
-                self.db.restart_connection()
+                self.db.start_connection()
             os.remove(zip_file_path)
         
         return success

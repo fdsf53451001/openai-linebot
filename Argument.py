@@ -4,7 +4,7 @@ import json
 
 class Argument:
     def __init__(self):
-        self.config = configparser.SafeConfigParser(os.environ)
+        self.config_file_path = 'data/config.json'
         self.openai_key = self.read_conf('key','openai_key')
         self.line_channel_access_token = self.read_conf('key','line_channel_access_token')
         self.line_channel_secret = self.read_conf('key','line_channel_secret')
@@ -12,11 +12,28 @@ class Argument:
         # self.user_list = json.loads(self.config['user']['user_list'])
 
     def read_conf(self,type,key):
-        self.config.read('data/config.conf', encoding="utf8")
-        return self.config[type][key]
-
+        # load json
+        with open(self.config_file_path, 'r', encoding="utf8") as f:
+            config = json.load(f)
+            # get value, if not exist return None
+            if type not in config or key not in config[type]:
+                return None
+            return config[type][key]
+        
     def set_conf(self,type,key,value):
-        self.config[type][key] = value
-        with open('data/config.conf', 'w', encoding="utf8") as configfile:
-            self.config.write(configfile)
-    
+        # load json
+        with open(self.config_file_path, 'r', encoding="utf8") as f:
+            config = json.load(f)
+        with open(self.config_file_path, 'w', encoding="utf8") as f:
+            config[type][key] = value
+            json.dump(config, f, ensure_ascii=False)
+
+    def read_whole_conf(self):
+        # load json
+        with open(self.config_file_path, 'r', encoding="utf8") as f:
+            return f.read()
+        
+    def set_whole_conf(self,config):
+        # load json
+        with open(self.config_file_path, 'w', encoding="utf8") as f:
+            f.write(config)

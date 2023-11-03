@@ -26,6 +26,7 @@
                     <tr>
                         <th>ID</th>
                         <th>Enable</th>
+                        <th>Tag</th>
                         <th>Keyword</th>
                         <th>Reply</th>
                         <th>Action</th>
@@ -35,6 +36,7 @@
                     <tr>
                         <th>ID</th>
                         <th>Enable</th>
+                        <th>Tag</th>
                         <th>Keyword</th>
                         <th>Reply</th>
                         <th>Action</th>
@@ -44,7 +46,9 @@
                     <tr>
                         <td>0</td>
                         <td><input type="checkbox" id="input-enable" checked></td>
-                        <!-- <td><input type="text" id="input-keyword" class="form-control form-control-sm" aria-describedby="inputGroup-sizing-sm"></td> -->
+                        <td>
+                            <input type="text" id="input-tag" class="form-control form-control-sm" aria-describedby="inputGroup-sizing-sm" value="default">
+                        </td>
                         <td>
                             <div class="row">
                                 <div class="col-9">
@@ -60,7 +64,6 @@
                         <td>
                             <div class="row">
                                 <div class="col-10">
-                                    <!-- <input type="text" id="input-reply" class="form-control form-control-sm" aria-describedby="inputGroup-sizing-sm"> -->
                                     <textarea id="input-reply" rows="3" style="width: 100%;"></textarea>
                                 </div>
                                 <div class="col-2">
@@ -110,9 +113,10 @@
             let row = table.insertRow(i);
             row.insertCell(0).innerHTML = $KEYWORD_DATA[i][0];
             row.insertCell(1).innerHTML = $KEYWORD_DATA[i][1];
-            row.insertCell(2).innerHTML = $KEYWORD_DATA[i][2];
-            row.insertCell(3).innerHTML = $KEYWORD_DATA[i][3];
-            row.insertCell(4).innerHTML = '<button type="button" id="input-send" class="btn btn-outline-danger btn-sm" onclick="delete_keyword('+$KEYWORD_DATA[i][0]+')">-</button>';
+            row.insertCell(2).innerHTML = $KEYWORD_DATA[i][4];
+            row.insertCell(3).innerHTML = $KEYWORD_DATA[i][2];
+            row.insertCell(4).innerHTML = $KEYWORD_DATA[i][3];
+            row.insertCell(5).innerHTML = '<button type="button" id="input-send" class="btn btn-outline-danger btn-sm" onclick="delete_keyword('+$KEYWORD_DATA[i][0]+')">-</button>';
         }
     }
 
@@ -121,11 +125,18 @@
         if(enable){enable = "1";}else{enable = "0";}
         var keyword = document.getElementById("input-keyword").value;
         var reply = document.getElementById("input-reply").value;
+        var tag = document.getElementById("input-tag").value;
+
+        if (keyword == "" || reply == "") {
+            alert("請輸入關鍵字與回應");
+            return;
+        }
+
         var data = {
             "enable": enable,
             "keyword": keyword,
             "reply": reply,
-            "note": ""
+            "note": tag
         }
         $.ajax({
             url: "/api/keywords?sid={{PASS_DATA['SID']}}",

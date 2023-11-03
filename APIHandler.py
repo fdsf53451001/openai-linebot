@@ -9,7 +9,7 @@ class APIHandler:
     def __init__(self,db):
         self.db = db
         self.argument = Argument()
-        self.user_list = json.loads(self.argument.read_conf('user','user_list'))
+        self.user_list = self.argument.read_conf('user','user_list')
         pass
 
     def deal_api_request(self, service_type, request_data):
