@@ -432,7 +432,7 @@
         if (input_value==""){
             alert('請輸入變數名稱！')
             return
-        }
+        }        
         input_value = "[SaveUserData-" + input_value + "] "
         $('#' + entry_field).val(input_value).change();
         alert('已送出！點擊關閉繼續。')
@@ -445,9 +445,22 @@
             alert('請輸入變數名稱及變數值！')
             return
         }
+        if (input_variable=="Tag" && !(isJson(input_value))){
+            alert('Tag 變數值必須為 JSON 格式，輸入格式錯誤！')
+            return
+        }
         let result = "[SetUserData-" + input_variable + "=" + input_value + "] "
         $('#' + entry_field).val(result).change();
         alert('已送出！點擊關閉繼續。')
+    }
+
+    function isJson(str) {
+        try {
+            JSON.parse(str);
+        } catch (e) {
+            return false;
+        }
+        return true;
     }
 
     function on_load_user_variable_save(){
@@ -464,6 +477,11 @@
     function on_set_user_variable_richmenu(){
         document.getElementById("set-user-variable-input").value = "RichMenuID";
         document.getElementById("set-user-value-input").value = "1, 2, or 3";
+    }
+
+    function on_set_user_variable_tag(){
+        document.getElementById("set-user-variable-input").value = "Tag";
+        document.getElementById("set-user-value-input").value = '["Tag1", "Tag2", "Tag3"]';
     }
 
     function on_save_external_code(){

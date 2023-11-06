@@ -20,30 +20,6 @@ from SystemMigrate import SystemMigrate
 
 from service.llm.Chatgpt import ChatGPT
 
-def setup_logger():
-    logger = logging.getLogger()
-    logger.setLevel(logging.DEBUG)
-    
-    formatter = logging.Formatter('* %(asctime)s %(levelname)s %(message)s')
-
-    console_handler = logging.StreamHandler()
-    console_handler.setLevel(logging.WARN)
-    console_handler.setFormatter(formatter)
-
-    file_warn_handler = logging.FileHandler('data/system_warn.log', mode='a')
-    file_warn_handler.setLevel(logging.WARN) 
-    file_warn_handler.setFormatter(formatter)
-
-    file_handler = logging.FileHandler('data/system.log', mode='w')
-    file_handler.setLevel(logging.INFO) 
-    file_handler.setFormatter(formatter)
-
-    logger.addHandler(console_handler)
-    logger.addHandler(file_handler)
-    logger.addHandler(file_warn_handler)
-
-setup_logger()
-
 BUILD_VERSION = 'v20231022'
 
 '''
@@ -80,6 +56,30 @@ def check_environment():
 
 argument = check_environment()
 
+def setup_logger():
+    logger = logging.getLogger()
+    logger.setLevel(logging.DEBUG)
+    
+    formatter = logging.Formatter('* %(asctime)s %(levelname)s %(message)s')
+
+    console_handler = logging.StreamHandler()
+    console_handler.setLevel(logging.WARN)
+    console_handler.setFormatter(formatter)
+
+    file_warn_handler = logging.FileHandler('data/system_warn.log', mode='a')
+    file_warn_handler.setLevel(logging.WARN) 
+    file_warn_handler.setFormatter(formatter)
+
+    file_handler = logging.FileHandler('data/system.log', mode='w')
+    file_handler.setLevel(logging.INFO) 
+    file_handler.setFormatter(formatter)
+
+    logger.addHandler(console_handler)
+    logger.addHandler(file_handler)
+    logger.addHandler(file_warn_handler)
+
+setup_logger()
+
 # set threading lock prevent sqlite error
 db_lock = threading.Lock()
 db = database(argument,db_lock)
@@ -88,7 +88,7 @@ chatgpt = ChatGPT(db,argument)
 messageHandler = MessageHandler(db,chatgpt)
 apiHandler = APIHandler(db)
 
-if argument.read_conf('platform','line') == True:
+if argument.read_conf('platform','line'):
     from service.chat_platform.line_platform import line_platform
     line = line_platform(argument, messageHandler)
 else:
@@ -118,7 +118,7 @@ def run_chat_analyze():
     thread = threading.Thread(target=_chat_analyze)
     thread.start()
 
-if argument.read_conf('sentiment_analysis','auto_analyze_msg_with_openai') == True:
+if argument.read_conf('sentiment_analysis','auto_analyze_msg_with_openai'):
     run_chat_analyze()
 
 
@@ -1020,7 +1020,7 @@ disabled api
 if __name__ == "__main__":
     port = int(argument.read_conf('system','system_port'))
     print('SERVER START UP !')
-    if argument.read_conf('system','use_local_certificates') == True:
+    if argument.read_conf('system','use_local_certificates'):
         app.run(host='0.0.0.0',port=port,ssl_context=('data/cert/cert.pem', 'data/cert/privkey.pem'))
     else:
         serve(app, host='0.0.0.0', port=port, threads=10)

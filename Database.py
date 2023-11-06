@@ -367,6 +367,15 @@ class database:
         result = self.deal_sql_request('SELECT userid FROM message WHERE messageid=?', (messageId,))
         return result[0][0]
 
+    def load_all_user_tag(self):
+        tmps = self.deal_sql_request('SELECT tmp FROM "user"')
+        tmps = [json.loads(r[0]) for r in tmps]
+        tags = set()
+        for tmp in tmps:
+            if 'Tag' in tmp:
+                tags.update(json.loads(tmp['Tag']))
+        return tags
+
     ### System Logs
 
     def load_system_logs(self):
@@ -387,5 +396,5 @@ class database:
 
 if __name__ == '__main__':
     db = database(Argument(),threading.Lock())
-    data = db.postgres_check_db_exist('chat')
+    data = db.load_all_user_tag()
     print(data)

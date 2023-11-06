@@ -194,19 +194,19 @@ class MessageHandler:
 
         reply_engine.append(self.check_restart_command)
 
-        if self.argument.read_conf('function','default_reply') == True:
+        if self.argument.read_conf('function','default_reply'):
             reply_engine.append(self.check_default_reply)
 
-        if self.argument.read_conf('function','keyword_reply') == True:
+        if self.argument.read_conf('function','keyword_reply'):
             reply_engine.append(self.keyword_hold)
                      
-        if self.argument.read_conf('function','story_reply') == True:
+        if self.argument.read_conf('function','story_reply'):
             reply_engine.append(self.story_hold)  
 
-        if self.argument.read_conf('function','flowise_reply') == True:
+        if self.argument.read_conf('function','flowise_reply'):
             reply_engine.append(self.flowise_hold)
 
-        if self.argument.read_conf('function','chatgpt_reply') == True:
+        if self.argument.read_conf('function','chatgpt_reply'):
             reply_engine.append(self.chatgpt_hold)
 
         reply_engine.append(self.fallback_reply)
