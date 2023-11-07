@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+
+{%block PAGE_NAME%}ChatGPT - 廣播訊息{%endblock%}
+
+{%block PAGEUP_SCRIPT%}
+<!-- Custom styles for this page -->
+<link href="{{url_for('static',filename='vendor/datatables/dataTables.bootstrap4.min.css')}}" rel="stylesheet">
+{%endblock%}
+
+{%block PAGE%}
+<!-- Page Heading -->
+<h1 class="h3 mb-2 text-gray-800">廣播訊息 Multicast Message</h1>
+<p class="mb-4">依據使用者標籤(tag)廣播訊息，可以用在通知、活動，或是發送最新消息。</p>
+
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold">廣播訊息</h6>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-6">
+                <div class="table-responsive">
+                    <table id="tag_table" class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                        <thead>
+                            <tr>
+                                <th>標籤名稱</th>
+                                <th>選擇</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tag_table">
+
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="col-6">
+                <!-- add an input area to get send message here-->
+                <div>
+                    <label for="message">Message:</label>
+                    <br/>
+                    <textarea id="input-reply" rows="6" style="width: 100%;"></textarea>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-12 text-right">
+                <button type="button" class="btn btn-primary" onclick="send_message_to_selected_tags()">發送訊息</button>
+            </div>
+        </div>
+        
+    </div>
+
+{%endblock%}
+
+{%block PAGEDOWN_SCRIPT%}
+
+<!-- Bootstrap core JavaScript-->
+<script src="{{url_for('static',filename='vendor/jquery/jquery.min.js')}}"></script>
+<script src="{{url_for('static',filename='vendor/bootstrap/js/bootstrap.bundle.min.js')}}"></script>
+
+<!-- Core plugin JavaScript-->
+<script src="{{url_for('static',filename='vendor/jquery-easing/jquery.easing.min.js')}}"></script>
+
+<script>
+
+    function get_selected_tags(){
+        var tags = [];
+        var tag_checkboxes = document.getElementsByName("tag");
+        for(var i=0; i<tag_checkboxes.length; i++){
+            if(tag_checkboxes[i].checked){
+                tags.push(tag_checkboxes[i].value);
+            }
+        }
+        return tags;
+    }
+
+    // make an ajax request to /api/user_tags to get all user tags
+    function get_user_tags(){
+        $.ajax({
+            url: "/api/user_tags"+"?sid={{PASS_DATA['SID']}}",
+            type: "GET",
+            contentType: "application/json; charset=utf-8",
+            success: function(data){
+                // set this tags into table
+                var tag_table = document.getElementById("tag_table");
+                var tag_table_body = tag_table.getElementsByTagName("tbody")[0];
+                data = JSON.parse(data);
+                for(var i=0; i<data.length; i++){
+                    var row = tag_table_body.insertRow(i);
+                    var cell1 = row.insertCell(0);
+                    var cell2 = row.insertCell(1);
+                    cell1.innerHTML = data[i];
+                    cell2.innerHTML = '<input type="checkbox" name="tag" value="'+data[i]+'">';
+                }
+            },
+            error: function(data){
+                alert("failed to load user tags!");
+            }
+        });
+    }
+
+    get_user_tags()
+
+    function send_message_to_selected_tags(){
+        var tags = get_selected_tags();
+        var message = document.getElementById("input-reply").value;
+        if(message == "" || tags.length == 0){
+            alert("請選擇標籤，並輸入訊息");
+            return;
+        }
+        var data = {
+            "tags": tags,
+            "message": message
+        }
+        $.ajax({
+            url: "/api/multicast_message_api"+"?sid={{PASS_DATA['SID']}}",
+            type: "POST",
+            data: JSON.stringify(data),
+            contentType: "application/json; charset=utf-8",
+            success: function(data){
+                alert("訊息已發送");
+            },
+            error: function(data){
+                alert("failed to send message!");
+            }
+        });
+    }
+
+</script>
+
+{%endblock%}

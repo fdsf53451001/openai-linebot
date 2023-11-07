@@ -45,8 +45,10 @@ class line_platform():
             logging.error('line reply error %s',e)
 
     def send_to_user(self, user_id, message):
-        if user_id=='testing': return
         self.line_bot_api.push_message(user_id, TextSendMessage(text=message))
+
+    def send_to_users(self, user_ids:list, message:str):
+        self.line_bot_api.multicast(user_ids, TextSendMessage(text=message))
 
     def get_user_profile(self, user_id):
         try:

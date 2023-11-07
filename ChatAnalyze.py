@@ -50,7 +50,7 @@ class ChatAnalyze:
             
     @staticmethod
     def get_grafana_analyze_image(argument):
-        urls = json.loads(argument.read_conf('grafana','image_url'))
+        urls = argument.read_conf('grafana','image_url')
         for i in tqdm.tqdm(range(int(argument.read_conf('grafana','image_amount'))),desc='Download Grafana Image'):
             r=requests.get(argument.read_conf('system','grafana_domain')+urls[i])
             if r.status_code != 200:

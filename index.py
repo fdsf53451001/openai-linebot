@@ -20,7 +20,7 @@ from SystemMigrate import SystemMigrate
 
 from service.llm.Chatgpt import ChatGPT
 
-BUILD_VERSION = 'v20231022'
+BUILD_VERSION = 'v20231107'
 
 '''
 init
@@ -260,6 +260,21 @@ def user_list():
                 }
     PASS_DATA.update(platform_info)
     return render_template('user_list.html',PASS_DATA=PASS_DATA)
+
+@app.route('/multicast_message')
+def multicast_message():
+    user_config = apiHandler.check_request_username(request)
+    if not user_config:
+        return redirect(url_for('login'))
+    else:
+        (sid,username) = user_config
+    
+    PASS_DATA = {'USER_NAME':username,
+                 'SID':sid,
+                 'USERS_DATA':json.dumps(db.load_all_user())
+                }
+    PASS_DATA.update(platform_info)
+    return render_template('multicast_message.html',PASS_DATA=PASS_DATA)
 
 @app.route('/chat_session')
 def chat_session():
@@ -911,6 +926,47 @@ class UserChatHistory(Resource):
             writer.writerows(chat_history)
         return send_file(csv_location, mimetype='application/csv')
 
+class UserTags(Resource):
+    def __init__(self, *args, **kwargs):
+        self.db = kwargs['db']
+        self.apiHandler = kwargs['apiHandler']
+        self.api = kwargs['api']
+
+    @api.doc(params={'sid':'sid'})
+    def get(self):
+        user_config = self.apiHandler.check_request_username(request)
+        if not user_config:
+            return 'Not Authorized',401
+        
+        return json.dumps(self.db.load_all_user_tag(),ensure_ascii=False)
+
+class MultiCastMessageAPI(Resource):
+    def __init__(self, *args, **kwargs):
+        self.db = kwargs['db']
+        self.apiHandler = kwargs['apiHandler']
+        self.api = kwargs['api']
+
+    @api.doc(params={'sid':'sid'})
+    def post(self):
+        user_config = self.apiHandler.check_request_username(request)
+        if not user_config:
+            return 'Not Authorized',401
+        request_argument = request.get_json()
+        try:
+            tags = request_argument['tags']
+            message = request_argument['message']
+            if message=='':
+                return 'Bad Request',400
+            for tag in tags:
+                user_ids = self.db.get_user_with_tag(tag)
+                if user_ids:
+                    messageHandler.send_to_users('line',user_ids,message)
+
+        except KeyError:
+            return 'Bad Request',400
+        return 'OK',200
+
+
 class VideoAPI(Resource):
     def __init__(self, *args, **kwargs):
         self.db = kwargs['db']
@@ -1000,6 +1056,8 @@ api.add_resource(Story_name, '/api/story_name',resource_class_kwargs={'api':api,
 api.add_resource(Story_sentence, '/api/story_sentence/<string:story_id>',resource_class_kwargs={'api':api,'db':db,'apiHandler':apiHandler})
 api.add_resource(User, '/api/user/<string:UUID>',resource_class_kwargs={'api':api,'db':db,'apiHandler':apiHandler})
 api.add_resource(UserChatHistory, '/api/user_chat_history/<string:UUID>',resource_class_kwargs={'api':api,'db':db,'apiHandler':apiHandler})
+api.add_resource(UserTags, '/api/user_tags',resource_class_kwargs={'api':api,'db':db,'apiHandler':apiHandler})
+api.add_resource(MultiCastMessageAPI, '/api/multicast_message_api',resource_class_kwargs={'api':api,'db':db,'apiHandler':apiHandler})
 api.add_resource(SystemSetting, '/api/system_setting',resource_class_kwargs={'api':api,'apiHandler':apiHandler})
 api.add_resource(SystemMigrateAPI, '/api/system_migrate',resource_class_kwargs={'api':api,'db':db,'apiHandler':apiHandler})
 api.add_resource(SystemConfigFileAPI, '/api/system_config',resource_class_kwargs={'api':api,'db':db,'apiHandler':apiHandler})

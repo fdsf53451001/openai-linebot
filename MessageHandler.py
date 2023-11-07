@@ -470,18 +470,23 @@ class MessageHandler:
                 logging.error('command格式錯誤! 請檢查格式正確，或是結尾是否有空格。 '+text)
         return None
 
-    def send_to_user(self, platform_name, user_id, msg):
-        # this function for alarm purpose only
-        # won't save to database
-        logging.debug('send to [%s] %s %s',platform_name,user_id,msg)
-
-        if platform_name=='command_line':
-            return
-        
+    def send_to_user(self, platform_name, user_id, msg:str):
         if not (self.argument.read_conf('function','send_alarm_msg')==True):
             return
         
+        logging.debug('send to [%s] %s %s',platform_name,user_id,msg)
+        sentence_id = self.db.save_chat(user_id, int(time.time()*1000), 0, msg)
+        self.db.save_reply(sentence_id, 0, 0)
+        
         self.platforms[platform_name].send_to_user(user_id, msg)
+
+    def send_to_users(self, platform_name, user_ids:list, msg:str):
+        logging.debug('send to [%s] %s %s',platform_name,user_ids,msg)
+        for user_id in user_ids:
+            sentence_id = self.db.save_chat(user_id, int(time.time()*1000), 0, msg)
+            self.db.save_reply(sentence_id, 0, 0)
+
+        self.platforms[platform_name].send_to_users(user_ids, msg)
 
     def check_user(self, user_id, platform_name):
         user_profile = self.db.check_user(user_id)

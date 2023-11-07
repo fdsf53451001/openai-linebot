@@ -191,7 +191,8 @@ class database:
         else:
             result = self.deal_sql_request("SELECT to_char(to_timestamp(time / 1000), 'YYYY-MM-DD') as day, COUNT(*) FROM message GROUP BY day")
         result = {r[0]:r[1] for r in result}
-        return result
+        sorted_result = dict(sorted(result.items()))
+        return sorted_result
 
     def load_last_reply_id(self, user_id):
         result = self.deal_sql_request('SELECT messageid FROM message WHERE userid=? AND direction=0 ORDER BY time DESC LIMIT 1', (user_id,))
@@ -369,12 +370,39 @@ class database:
 
     def load_all_user_tag(self):
         tmps = self.deal_sql_request('SELECT tmp FROM "user"')
+        return self._get_tags_from_tmps(tmps)
+
+    def load_user_tag(self, user_id):
+        tmps = self.deal_sql_request('SELECT tmp FROM "user" WHERE uuid=?', (user_id,))
+        return self._get_tags_from_tmps(tmps)
+        
+
+    def _get_tags_from_tmps(self, tmps):
         tmps = [json.loads(r[0]) for r in tmps]
         tags = set()
         for tmp in tmps:
             if 'Tag' in tmp:
                 tags.update(json.loads(tmp['Tag']))
-        return tags
+        return list(tags)
+
+
+    def get_user_with_tag(self, tag) -> list:
+        if self.argument.read_conf('db','type')=='sqlite':
+            result = self.deal_sql_request('SELECT uuid FROM "user" WHERE INSTR(tmp, ?) > 0', (tag,))
+        else:
+            result = self.deal_sql_request('SELECT uuid FROM "user" WHERE STRPOS(tmp, ?) > 0', (tag,))
+        return result[0]
+
+    def add_user_extra_tag(self, user_id, tag):
+        tags = self.load_user_tag(user_id)
+        tags.append(tag)
+        tags = json.dumps(tags)
+        user_extra_data = self.load_all_user_extra_data(user_id)
+        user_extra_data['Tag'] = tags
+        user_extra_data = json.dumps(user_extra_data)
+        result = self.deal_sql_request('UPDATE "user" SET tmp=? WHERE uuid=?', (user_extra_data, user_id))
+        return result
+
 
     ### System Logs
 
@@ -396,5 +424,5 @@ class database:
 
 if __name__ == '__main__':
     db = database(Argument(),threading.Lock())
-    data = db.load_all_user_tag()
+    data = db.load_chat_amount_each_month()
     print(data)
