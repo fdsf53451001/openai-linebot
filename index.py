@@ -565,11 +565,7 @@ class ImageAPI(Resource):
         else :
             return ('error',415) 
         
-    @api.doc(params={'sid':'sid'})
     def get(self, filename):
-        user_config = self.apiHandler.check_request_username(request)
-        if not user_config:
-            return 'Not Authorized',401
         filename = self.baseURL + filename
 
         if os.path.isfile(filename):
@@ -1036,7 +1032,6 @@ class VideoThumbnailAPI(Resource):
         self.baseURL = 'resources/video/img/'
         self.api = kwargs['api']
     
-    @api.doc(params={'sid':'sid'})
     def get(self, filename):
         filename = self.baseURL + filename
 
