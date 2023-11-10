@@ -57,10 +57,10 @@
 
 <div class="card shadow mb-4">
     <div class="card-header py-3">
-        <h6 class="m-0 font-weight-bold text-primary">如何使用RichMenu功能</h6>
+        <h6 class="m-0 font-weight-bold text-primary">如何設定RichMenu</h6>
     </div>
     <div class="card-body">
-        <p>先使用linebot designer劃出範圍與動作，並將image與右下方的json儲存為檔案，上傳至本網站。</p>
+        <p>先使用linebot designer劃出範圍與動作，並將image與右下方的json儲存為檔案。</p>
         <p>並且請遵守line官方的圖片格式要求:</p>
         <p>* Image format: JPEG or PNG</p>
         <p>* Image width size (pixels): 800 to 2500</p>
@@ -68,6 +68,22 @@
         <p>* Image aspect ratio (width / height): 1.45 or more</p>
         <p>* Max file size: 1 MB</p>
         <img src="{{url_for('static',filename='img/richmenu_example.png')}}" style="height: 480px; width: 720px;"/>
+        <p>點擊左側LINE設定，選擇RichMenu設定。</p>
+        <img src="{{url_for('static',filename='img/richmenu_setup.png')}}" style="height: 480px; width: 720px;"/>
+        <p>依次輸入RichMenu，最多允許三個。最常用的請設定為預設選單。</p>
+    </div>
+</div>
+
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">如何切換RichMenu</h6>
+    </div>
+    <div class="card-body">
+        <p>在劇本模式中，找到需要切換RichMenu的地方。</p>
+        <img src="{{url_for('static',filename='img/richmenu_story.png')}}" style="height: 480px; width: 720px;"/>
+        <p>點擊R，選擇設定使用者資料，選擇設定使用者標籤，改為想要的標籤並儲存。</p>
+        <img src="{{url_for('static',filename='img/richmenu_change.png')}}" style="height: 480px; width: 720px;"/>
+        <p>當使用者執行到此劇本時，就會自動切換RichMenu。</p>
     </div>
 </div>
 
