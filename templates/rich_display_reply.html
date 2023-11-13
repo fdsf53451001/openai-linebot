@@ -51,6 +51,9 @@
                     <button type="button" class="btn btn-outline-primary btn-sm" onmousedown="toggle_reply_mode('external_code')">
                         執行外部程式
                     </button>
+                    <button type="button" class="btn btn-outline-primary btn-sm" onmousedown="toggle_reply_mode('external_link')">
+                        外部連結
+                    </button>
             </div>
             <hr/>
             <!-- content -->
@@ -223,8 +226,46 @@
 
                 <button type="button" id="buttons-templates-send" class="btn btn-primary btn-sm"  style="margin-left: 10px;" onclick="on_button_templates_send()">送出所有頁面</button>
             </div>
+
+            <div id="external_link_reply_content" class="reply_content">
+                <h3>外部連結 External Link</h3>
+                <p>引導使用者點擊外部連結，並傳遞使用者參數。</p>
+                <br/>
+                <div class="div">
+                    <div class="row">
+                        <div class="col-9">
+                            <div class="input-group mb-3">
+                                <span class="input-group-text" id="inputGroup-external-link-parameter">URL Parameter URL參數</span>
+                                <input id="external-link-parameter-input" type="text" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-external-link-parameter">
+                            </div>
+                        </div>
+                        <div class="col-3">
+
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-9">
+                            <div class="input-group mb-3">
+                                <span class="input-group-text" id="inputGroup-external-link-variable">Variable Name 使用者變數</span>
+                                <input id="external-link-variable-input" type="text" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-external-link-variable">
+                            </div>
+                        </div>
+                        <div class="col-3">
+                            <button type="button" class="btn btn-primary btn-sm"  style="margin-left: 10px;" onclick="on_external_link_add_parameter()">加入參數到下方網址列</button>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="input-group mb-3">
+                            <span class="input-group-text" id="inputGroup-external-link-url">Base URL</span>
+                            <input id="external-link-url-input" type="text" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-external-link-url">
+                        </div>
+                    </div>
+                    <button type="button" class="btn btn-primary btn-sm"  style="margin-left: 10px;" onclick="on_external_link_save()">Save</button>
+                </div>
+            </div>
+
         </div>
-        
+
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
         </div>

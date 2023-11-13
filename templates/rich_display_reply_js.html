@@ -495,4 +495,28 @@
         alert('已送出！點擊關閉繼續。')
     }
 
+    function on_external_link_add_parameter(){
+        let input_parameter = $('#external-link-parameter-input').val()
+        let input_variable = $('#external-link-variable-input').val()
+        let input_url = $('#external-link-url-input').val()
+        if (input_parameter=="" || input_variable=="" || input_url==""){
+            alert('請輸入參數名稱，變數名稱，以及URL！')
+            return
+        }
+        if (input_url.indexOf('?') > -1){
+            input_url += "&" + input_parameter + "=[LoadUserData-" + input_variable + "] "
+        }else{
+            input_url += "?" + input_parameter + "=[LoadUserData-" + input_variable + "] "
+        }
+        $('#external-link-url-input').val(input_url);
+
+    }
+
+    function on_external_link_save(){
+        
+        let input_url = $('#external-link-url-input').val()
+        $('#' + entry_field).val(input_url).change();
+        alert('已送出！點擊關閉繼續。')
+    }
+
 </script>

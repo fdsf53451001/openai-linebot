@@ -10,6 +10,11 @@ from datetime import datetime
 import logging
 import threading
 
+import requests
+from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+from cryptography.hazmat.backends import default_backend
+import base64
+
 sys.path.append('data/')
 from Argument import Argument
 from Database import database

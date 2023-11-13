@@ -86,9 +86,17 @@ class MessageHandler:
         return ReplyMessage(False)
 
     def check_user_variable(self, user_id, msg) -> str:
+        '''
+        load user variable
+        if request variable is UUID, then return UUID directly
+        '''
         command_content = self.fetch_command_content(msg,'LoadUserData')
         if command_content:
+            # get value
             user_value = self.db.load_user_extra_data(user_id,command_content[2])
+            if command_content[2] == 'UUID':
+                user_value = user_id
+
             if user_value:
                 return msg.replace(msg[command_content[0]:command_content[1]+1],user_value)
             else:

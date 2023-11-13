@@ -1,6 +1,6 @@
 from linebot import LineBotApi, WebhookHandler
 from linebot.exceptions import InvalidSignatureError, LineBotApiError
-from linebot.models import MessageEvent, TextMessage, TextSendMessage, RichMenu
+from linebot.models import MessageEvent, TextMessage, TextSendMessage, FlexSendMessage, BubbleContainer, RichMenu
 import json
 import logging
 
@@ -49,6 +49,11 @@ class line_platform():
 
     def send_to_users(self, user_ids:list, message:str):
         self.line_bot_api.multicast(user_ids, TextSendMessage(text=message))
+
+    def send_to_user_with_flex_msg(self, user_id, flex_message_json):
+        bubble_container = BubbleContainer.new_from_json_dict(flex_message_json)
+        flex_message = FlexSendMessage(alt_text="Flex Message", contents=bubble_container)
+        self.line_bot_api.push_message(user_id, flex_message)
 
     def get_user_profile(self, user_id):
         try:
