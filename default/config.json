@@ -44,6 +44,7 @@
         "chat_temperature" : 0.7,
         "max_tokens" : 300,
         "prompt_prefix" : "None",
+        "prompt_postfix": "None",
         "openai_warning_message" : false,
         "openai_timeout_warning_sec" : 25,
         "openai_timeout_cut_sec" : 30

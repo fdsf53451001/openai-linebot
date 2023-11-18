@@ -9,7 +9,6 @@ class Argument:
         self.line_channel_access_token = self.read_conf('key','line_channel_access_token')
         self.line_channel_secret = self.read_conf('key','line_channel_secret')
         self.discord_token = self.read_conf('key','discord_token')
-        # self.user_list = json.loads(self.config['user']['user_list'])
 
     def read_conf(self,type,key):
         # load json
