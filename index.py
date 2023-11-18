@@ -4,16 +4,9 @@ import werkzeug
 from waitress import serve
 import os, sys, subprocess, psutil
 import shutil
-import time
 import json, csv
-from datetime import datetime
 import logging
 import threading
-
-import requests
-from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
-from cryptography.hazmat.backends import default_backend
-import base64
 
 sys.path.append('data/')
 from Argument import Argument
@@ -25,7 +18,7 @@ from SystemMigrate import SystemMigrate
 
 from service.llm.Chatgpt import ChatGPT
 
-BUILD_VERSION = 'v20231107'
+BUILD_VERSION = 'v20231117'
 
 '''
 init
@@ -39,10 +32,6 @@ def check_environment():
     folders = ['data','data/flowise','data/cert','data/postgres','static/grafana','resources','resources/image','resources/video','resources/video/img','resources/files']
     for folder in folders:
         os.makedirs(folder, exist_ok=True)
-
-    # create log file
-    # if not os.path.isfile('data/system.log'):
-    #     open('data/system.log', 'a').close()
 
     # create config file
     if not os.path.isfile('data/config.json'):
@@ -156,6 +145,8 @@ def index():
                  'USER_AMOUNT':db.load_user_amount(),
                  'CHAT_AMOUNT':db.load_chat_amount(),
                  'OPENAI_USAGE_AMOUNT':db.load_openai_usage(),
+                 'OPENAI_TOKENS_AMOUNT':db.load_openai_total_tokens(),
+                 'OPENAI_TOKENS_DETAIL':json.dumps(db.load_openai_tokens_detail()),
                  'USAGE_GRAPH_DATA':json.dumps(db.load_chat_amount_each_month()),
                  'SYSTEM_LOGS':db.load_system_logs()
                 }

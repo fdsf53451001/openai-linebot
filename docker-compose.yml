@@ -10,6 +10,8 @@ services:
       - ./resources:/bot/resources
     environment:
       - SYSTEM_PORT=80
+    depends_on:
+      - "postgres"
 
   grafana:
     image: openai-linebot-grafana:latest

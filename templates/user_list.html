@@ -30,6 +30,7 @@
                         <th>usage</th>
                         <th>created</th>
                         <th>tmp</th>
+                        <th>tag</th>
                         <th>history</th>
                     </tr>
                 </thead>
@@ -95,7 +96,8 @@
             row.insertCell(6).innerHTML = $USERS_DATA[i][5];
             row.insertCell(7).innerHTML = $USERS_DATA[i][6];
             chat_history_url = "api/user_chat_history/"+$USERS_DATA[i][0]+"?sid="+$SID;
-            row.insertCell(8).innerHTML = '<a href="'+chat_history_url+'"><img src="{{url_for("static",filename="img/download.png")}}" style="height: 30px;width: 30px;"></a>';
+            row.insertCell(8).innerHTML = $USERS_DATA[i][8];
+            row.insertCell(9).innerHTML = '<a href="'+chat_history_url+'"><img src="{{url_for("static",filename="img/download.png")}}" style="height: 30px;width: 30px;"></a>';
             
         }
     }

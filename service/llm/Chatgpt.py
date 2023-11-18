@@ -29,7 +29,10 @@ class ChatGPT:
             else:
                 role = 'user'
             message_list.append({'role':role,'content':row[1]})
-        
+
+        if self.argument.read_conf('openai','prompt_postfix') != 'None':
+            message_list.append({'role':'system','content':self.argument.read_conf('openai','prompt_postfix')})
+
         return self.send_to_openai(message_list)
 
     def send_to_openai(self ,message_list) -> str:
@@ -43,14 +46,18 @@ class ChatGPT:
                 )
 
             if response:
+                total_tokens = response['usage']['total_tokens']
+                self.db.add_openai_tokens(self.argument.read_conf('openai','model'), total_tokens)
                 response_msg = self.cc.convert(response['choices'][0]['message']['content'])
                 logging.debug('receive from openai %s',response_msg)
                 return response_msg
             else:
                 return None
         
-        except openai.error.RateLimitError:
+        except openai.error.RateLimitError as e:
+            logging.error('openai error %s',e)
             return None
         
-        except ConnectionResetError:
+        except ConnectionResetError as e:
+            logging.error('openai error %s',e)
             return None

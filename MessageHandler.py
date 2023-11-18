@@ -156,9 +156,12 @@ class MessageHandler:
                 except:
                     logging.error('Error Format in SetUserData : '+command_content[2])
     
-                self.db.add_user_extra_data(user_id, input_variable, input_value)
-                self.check_user_special_variable(platform_name, user_id, input_variable, input_value)
+                if not self.check_user_special_variable(platform_name, user_id, input_variable, input_value):
+                    # not special variable, save to user data
+                    self.db.add_user_extra_data(user_id, input_variable, input_value)
+
                 match = True
+
 
             if match:
                 return i
@@ -180,12 +183,15 @@ class MessageHandler:
                 (max_match_index, max_match_len) = (i, len(rule))
         return max_match_index
     
-    def check_user_special_variable(self, platform_name, user_id, variable, value):
+    def check_user_special_variable(self, platform_name, user_id, variable, value) -> bool:
         '''
         This function used to detect special user variable.
         when this kind of variable change, system will take some action.        
         ex.
         RichMenuID : use to change some user's rich menu
+
+        return:
+            bool : if this variable is special variable
         '''
         if variable == 'RichMenuID':
             richmenu_id = self.argument.read_conf('line','richmenu_id_'+str(value))
@@ -193,6 +199,15 @@ class MessageHandler:
                 self.platforms[platform_name].set_richmenu_for_user(user_id, richmenu_id)
             else:
                 logging.error('Try to load RichMenu not found : '+str(value))
+
+        elif variable == 'Tag':
+            if value != '':
+                self.db.add_user_extra_tag(user_id, value)       
+        else:
+            return False
+    
+        return True
+        
 
     # ? reply engine
 
@@ -299,7 +314,7 @@ class MessageHandler:
             return self.story_hold_continue(platform_name,user_id, sentences[match_index][0], receive_text)
         
         # failed to match
-        self.send_to_user(platform_name, user_id, "無法繼續對話，將由OpenAI回覆")
+        self.send_to_user(platform_name, user_id, "以下由人工智能對話")
         return ReplyMessage(False)
 
     def chatgpt_hold(self, platform_name, user_id, receive_text) -> TextSendMessage:

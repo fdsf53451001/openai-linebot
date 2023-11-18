@@ -143,8 +143,17 @@ class database:
                                     "name"	TEXT, \
                                     "photo"	TEXT, \
                                     "last_update_time"	bigint, \
+                                    "tag"    TEXT DEFAULT \'[\"all_user\"]\', \
                                     "tmp"	TEXT NOT NULL DEFAULT \'{}\', \
                                     PRIMARY KEY("uuid") \
+                                )'
+        )
+        self.deal_sql_request(  'CREATE TABLE "openai_usage" ( \
+                                    "call_id"	bigserial  UNIQUE, \
+                                    "time"	bigint NOT NULL, \
+                                    "model"	TEXT NOT NULL, \
+                                    "tokens" INTEGER NOT NULL, \
+                                    PRIMARY KEY("call_id") \
                                 )'
         )
 
@@ -313,6 +322,19 @@ class database:
     def load_openai_usage(self):
         result = self.deal_sql_request('SELECT COUNT(1) FROM message_reply WHERE reply_mode=4')
         return result[0][0]
+    
+    def add_openai_tokens(self, model, tokens):
+        result = self.deal_sql_request('INSERT INTO openai_usage (time,model,tokens) VALUES (?, ?, ?)', (int(time.time()), model, tokens))
+        return result
+
+    def load_openai_total_tokens(self):
+        result = self.deal_sql_request('SELECT COALESCE(SUM(tokens), 0) FROM openai_usage')
+        return result[0][0]
+
+    def load_openai_tokens_detail(self):
+        # for each model, calculate the total tokens
+        result = self.deal_sql_request('SELECT model, COALESCE(SUM(tokens), 0) FROM openai_usage GROUP BY model')
+        return result
 
     ### user Operation
 
@@ -321,7 +343,7 @@ class database:
         return result[0][0]
 
     def load_all_user(self):
-        result = self.deal_sql_request('SELECT uuid, platform, ban, name, photo, last_update_time, tmp,count(messageid)  FROM "user", message WHERE "user".uuid=message.userid GROUP BY uuid')
+        result = self.deal_sql_request('SELECT uuid, platform, ban, name, photo, last_update_time, tmp, count(messageid), tag  FROM "user", message WHERE "user".uuid=message.userid GROUP BY uuid')
         return result
 
     def check_user(self, user_id):
@@ -369,38 +391,22 @@ class database:
         return result[0][0]
 
     def load_all_user_tag(self):
-        tmps = self.deal_sql_request('SELECT tmp FROM "user"')
-        return self._get_tags_from_tmps(tmps)
+        tmps = self.deal_sql_request('SELECT tag FROM "user"')
+        return json.loads(tmps[0][0])
 
     def load_user_tag(self, user_id):
-        tmps = self.deal_sql_request('SELECT tmp FROM "user" WHERE uuid=?', (user_id,))
-        return self._get_tags_from_tmps(tmps)
-        
-
-    def _get_tags_from_tmps(self, tmps):
-        tmps = [json.loads(r[0]) for r in tmps]
-        tags = set()
-        for tmp in tmps:
-            if 'Tag' in tmp:
-                tags.update(json.loads(tmp['Tag']))
-        return list(tags)
-
+        tmps = self.deal_sql_request('SELECT tag FROM "user" WHERE uuid=?', (user_id,))
+        return json.loads(tmps[0][0])
 
     def get_user_with_tag(self, tag) -> list:
-        if self.argument.read_conf('db','type')=='sqlite':
-            result = self.deal_sql_request('SELECT uuid FROM "user" WHERE INSTR(tmp, ?) > 0', (tag,))
-        else:
-            result = self.deal_sql_request('SELECT uuid FROM "user" WHERE STRPOS(tmp, ?) > 0', (tag,))
+        result = self.deal_sql_request('SELECT uuid FROM "user" WHERE STRPOS(tag, ?) > 0', (tag,))
         return result[0]
 
     def add_user_extra_tag(self, user_id, tag):
         tags = self.load_user_tag(user_id)
         tags.append(tag)
         tags = json.dumps(tags)
-        user_extra_data = self.load_all_user_extra_data(user_id)
-        user_extra_data['Tag'] = tags
-        user_extra_data = json.dumps(user_extra_data)
-        result = self.deal_sql_request('UPDATE "user" SET tmp=? WHERE uuid=?', (user_extra_data, user_id))
+        result = self.deal_sql_request('UPDATE "user" SET tag=? WHERE uuid=?', (tags, user_id))
         return result
 
 

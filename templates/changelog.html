@@ -83,6 +83,18 @@
                 可直接升級
             </td>
         </tr>
+        <tr>
+            <td>v20231117</td>
+            <td>1.加入OpenAI使用量分析。<br>
+                2.加入OpenAI postfix，可以用於指定回覆語言，與其他自訂功能。<br>
+                3.廣播訊息可以廣播所有用戶。
+            </td>
+            <td>
+                拋棄SQLite支持<br>
+                資料庫加入chat_session table，更新user table。<br>
+                設定檔加入prompt_postfix條目
+            </td>
+        </tr>
     </table>
 {%endblock%}
 
